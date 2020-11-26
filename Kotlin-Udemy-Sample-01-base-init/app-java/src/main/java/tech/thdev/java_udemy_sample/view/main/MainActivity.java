@@ -1,6 +1,6 @@
 package tech.thdev.java_udemy_sample.view.main;
 
-import android.app.Dialog;
+import android.annotation.SuppressLint;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PersistableBundle;
@@ -21,13 +21,20 @@ import org.reactivestreams.Subscription;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.reactivex.Completable;
 import io.reactivex.Observable;
+import io.reactivex.ObservableSource;
+import io.reactivex.Scheduler;
+import io.reactivex.Single;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 import tech.thdev.java_udemy_sample.R;
 import tech.thdev.java_udemy_sample.util.ActivityUtil;
 
@@ -37,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
     Toolbar toolbar;
 
     private FloatingActionButton fab;
+    long ttt = System.currentTimeMillis();
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
@@ -66,149 +74,140 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        CustomDialog d = new CustomDialog(this, android.R.style.Theme_Translucent_NoTitleBar_Fullscreen);
-//        CustomDialog d = new CustomDialog(this);
-        d.show();
-
-        movable0.move("movable0");
-        movable1.move("movable1");
-        movable2.move("movable2");
-
-        Movable movable3 = str -> System.out.println("gogo move move" + str); // * 람다식
-        movable3.move("movable3");
-
-        List<Fruit> fruits = Arrays.asList(new Fruit("apple", "red"), new Fruit("melon", "green"), new Fruit("banana", "yellow"));
-
-        List<Fruit> list = extractFruitList(fruits, new Predicate<Fruit>() {
-            @Override
-            public boolean test(Fruit fruit) {
-                return "apple".equals(fruit.getName());
-            }
-        });
 
         // http://gaemi.github.io/rxjava/2016/12/02/async-task-with-rxjava.html
 
-        // 람다식(이름이 없는 함수를 정의할 수 있어야 한다.)
-        List<Fruit> list1 = extractFruitList(fruits, fruit -> "apple".equals(fruit.getName()));
-        List<Fruit> list2 = extractFruitList(fruits, fruit -> "yellow".equals(fruit.getColor()));
-
-        for (Fruit f : list2) {
-            Log.d("TAG", "onCreate: f=" + f.toString());
-        }
-
-        Runnable r = () -> System.out.println("onCreate hello functional"); // 스레드를 생성할때 주로사용하였으며 가장 기본적인 함수형 인터페이스다.
-        r.run();
-
-        Supplier<String> s = () -> "hello supplier"; // 인자는 받지않으며 리턴타입만 존재하는 메서드를 갖고있다.
-        String str = s.get();
-        Log.d("TAG", "onCreate: Supplier str="+str);
-
-        Consumer<String> c = str1 -> System.out.println(str1); // 리턴을 하지않고(void), 인자를 받는 메서드를 갖고있다.
-        c.accept("onCreate test");
-
+        /**
+         * 1. create
+         * onNext(), onError(), onCompleted()를 적절히 호출하여야 합니다
+         * onComplete를 호출하여 최종적으로 Observable의 데이터 방출 작업은 끝났음을 알립니다.
+         * 연산자에서 유의해야 할 사항은 Observable가 데이터를 방출(emit)하기 전에 구독자가 구독취소를 하게 되면 UndeliverableException이 발생
+         *
+         * 2. just
+         * just는 굉장히 심플하지만 조심해서 사용해야 하는 연산자입니다. 데이터를 바로 방출할 때 사용됩니다.
+         * onNext나 onCompleted() 등과 같이 별도의 메서드를 호출할 필요가 없고, just()로 데이터만 넘겨주면 옵저버의 역할이 끝이 납니다.
+         * 내부적으로 ScalarDisposable를 사용하는데, onNext를 통하여 데이터를 방출하고, onCompleted까지 호출하고 있습니다.
+         *
+         * 3. defer
+         * Observable은 create나 just와 다르게 옵져버가 구독하기전까지는 Observable를 생성하지 않습니다. defer는 subscribe가 호출될 때 할당
+         *
+         * 4. fromCallable
+         * defer와 마찬가지로 스트림 생성을 지연하는 효과를 가지고 있습니다. 하나의 차이점이 존재하는데 이는 Observable에서 데이터를 방출(emit) 할 때
+         * 추가로 Observable을 생성하지 않고 바로 데이터를 스트림으로 전달할 수 있다는 점입니다.
+         *
+         * Observable, Single, Completable
+         * Single(onSuccess(item) 과 onError(throwable)만을 가진다)
+         * 비동기작업에 적절함.작업이 종료됨과 동시에 1개의 Item 만을 전파하는 Single.
+         *
+         * Completable(onCompleted() 와 onError(throwable))
+         * 비동기작업에 적절함.발행하는 Item 은 없이 작업의 종료만을 전파하는 Completable
+         */
         // RXJava
+//        observable01(); // just
+//        observable02(); // create
+//        observable03(); // defer
+//        observable04(); // fromCallable
+        Single01(); // Single
+//        Completable01(); // Completable
+
+    }
+
+    void observable01() {
         Observable.just("Hello")
-                .map(ss -> ss+"-seo")
+                .map(ss -> ss + "-seo")
                 .subscribe(ss -> System.out.println(ss));
 
         Observable.just("Hello")
-                .map(ss -> ss+"-seo")
+                .map(ss -> ss + "-seo")
                 .map(ss -> ss.hashCode())
                 .map(i -> Integer.toString(i))
                 .subscribe(ss -> System.out.println(ss));
     }
 
-    // 람다..
-    interface Movable {
-        void move(String str);
+    void observable02() {
+        Observable.create(
+                subscriber -> {
+                    subscriber.onNext("Hello");
+                    subscriber.onNext("My name is");
+                    subscriber.onNext(getHeavyData());
+                    subscriber.onNext("Gaemi");
+                    subscriber.onComplete(); // 호출안하면 대기상태, Single, Completable 사용하면 호출필요없음.
+                })
+                .subscribeOn(Schedulers.io())
+                .subscribe(s -> {
+                    System.out.println(s);
+                })
+        ;
     }
 
-    class Car implements Movable {
-        private int speed; // 람다 표현식으로 구현할때 객체는 상태를 가질 수 없다. 이는 추후에 알아볼 스트림(Stream)을 이용한 병렬(Parallel)적 프로그래밍시
+    void observable03() {
+        System.out.println("start 03 : " + (System.currentTimeMillis() - ttt));
+        Observable.defer((Callable<ObservableSource<String>>) () -> Observable.just(getHeavyData()))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(ss -> System.out.println("Completed!!"));
+        System.out.println("end 03 : " + (System.currentTimeMillis() - ttt));
 
-        @Override
-        public void move(String str) {
-            System.out.println("gogo car move" + str);
-        }
     }
 
-    // 인터페이스를 익명클래스로 구현해서 메소드를 호출
-    Movable movable0 = new Movable() {
-        @Override
-        public void move(String str) {
-            System.out.println("movable0 gogo move move" + str);
-        }
-    };
+    void observable04() {
+        System.out.println("start 04 : " + (System.currentTimeMillis() - ttt));
+        Observable.fromCallable(() -> getHeavyData())
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(ss -> System.out.println("Completed!!"));
+        System.out.println("end 04 : " + (System.currentTimeMillis() - ttt));
 
-    Movable movable1 = (str) -> { // * 람다식
-        System.out.println("movable1 gogo move move" + str);
-    };
-
-    Movable movable2 = str -> System.out.println("movable2 gogo move move" + str); // * 람다식
-
-
-    // 행위 파라미터화(Behavior Parameterize)
-    class Fruit {
-        private String name;
-        private String color;
-
-        Fruit(String name, String color) {
-            this.name = name;
-            this.color = color;
-        }
-
-        String getName() {
-            return this.name;
-        }
-
-        String getColor() {
-            return this.color;
-        }
-
-        @Override
-        public String toString() {
-            return "Fruit{" + "name='" + name + '\'' + ", color='" + color + '\'' + '}';
-        }
     }
 
-    List<Fruit> extractApple(List<Fruit> fruits) {
-        List<Fruit> resultList = new ArrayList<>();
-        for (Fruit fruit : fruits) {
-            if ("apple".equals(fruit.getName())) {
-                resultList.add(fruit);
-            }
-        }
-        return resultList;
+    void Single01() {
+//        Single<String> stringSingle = Single.fromCallable(() -> getHeavyData());
+//        stringSingle.subscribeOn(Schedulers.io());
+//        stringSingle.observeOn(AndroidSchedulers.mainThread());
+//        stringSingle.subscribe(str -> {
+//            System.out.println("Completed!!");
+//        }, throwable -> {
+//            throwable.printStackTrace();
+//        });
+
+        System.out.println("start Single01 : " + (System.currentTimeMillis() - ttt));
+        Single.fromCallable(() -> getHeavyData())
+                .subscribeOn(Schedulers.io())
+                .subscribe(str -> {
+                    System.out.println((System.currentTimeMillis() - ttt)+" Single Completed!!");
+                }, it -> {
+                    it.printStackTrace();
+                });
+        System.out.println("end Single01 : " + (System.currentTimeMillis() - ttt));
     }
 
-    List<Fruit> extractRed(List<Fruit> fruits) {
-        List<Fruit> resultList = new ArrayList<>();
-        for (Fruit fruit : fruits) {
-            if ("yellow".equals(fruit.getColor())) {
-                resultList.add(fruit);
-            }
-        }
-        return resultList;
+    void Completable01() {
+        System.out.println("start Completable01 : " + (System.currentTimeMillis() - ttt));
+        Completable.fromCallable(() -> getHeavyData())
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(() -> {
+                    System.out.println((System.currentTimeMillis() - ttt)+" Completable01 Completed!!");
+                }, throwable -> {
+                    throwable.printStackTrace();
+                });
+        System.out.println("end Completable01 : " + (System.currentTimeMillis() - ttt));
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.N)
-    List<Fruit> extractFruitList(List<Fruit> fruits, Predicate<Fruit> predicate) {
-        List<Fruit> resultList = new ArrayList<>();
-        for (Fruit fruit : fruits) {
-            if (predicate.test(fruit)) {
-                resultList.add(fruit);
-            }
+    private String getHeavyData() {
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
-        return resultList;
+        return "Just Item";
     }
 
-
-
-//    Action1<String> onNextAction = new Action1<String>() {
-//        @Override
-//        public void call(String s) {
-//            System.out.println(s);
-//        }
-//    };
-
+    private void getHeavyData2() {
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
 }
