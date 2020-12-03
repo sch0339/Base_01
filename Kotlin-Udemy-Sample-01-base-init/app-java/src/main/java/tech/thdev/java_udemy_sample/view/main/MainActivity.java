@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
          * 내부적으로 ScalarDisposable를 사용하는데, onNext를 통하여 데이터를 방출하고, onCompleted까지 호출하고 있습니다.
          *
          * 3. defer
-         * Observable은 create나 just와 다르게 옵져버가 구독하기전까지는 Observable를 생성하지 않습니다. defer는 subscribe가 호출될 때 할당
+         * Observable은 create나 just와 다르게 옵져버가 구독하기전까지는 Observable를 생성하지 않습니다. 즉 defer는 subscribe가 호출될 때 할당
          *
          * 4. fromCallable
          * defer와 마찬가지로 스트림 생성을 지연하는 효과를 가지고 있습니다. 하나의 차이점이 존재하는데 이는 Observable에서 데이터를 방출(emit) 할 때
@@ -91,10 +91,10 @@ public class MainActivity extends AppCompatActivity {
          * 비동기작업에 적절함.발행하는 Item 은 없이 작업의 종료만을 전파하는 Completable
          */
         // RXJava
-        observable01(); // create
+        // observable01(); // create
         // observable02(); // just
-//        observable03(); // defer
-//        observable04(); // fromCallable
+        // observable03(); // defer
+        observable04(); // fromCallable
 //         Single01(); // Single
 //        Completable01(); // Completable
 
@@ -102,12 +102,14 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("CheckResult")
     void observable01() {
+        System.out.println("start 01 : " + (System.currentTimeMillis() - ttt));
         Observable.create(
                 subscriber -> {
                     try {
                         subscriber.onNext("Hello");
                         subscriber.onNext("My name is");
                         subscriber.onNext(getHeavyData());
+                        subscriber.onNext(delayTime(3000));
                         subscriber.onNext("Gaemi");
                         subscriber.onComplete(); // 호출안하면 대기상태, Single, Completable 사용하면 호출필요없음.
                     } catch (Exception e) {
@@ -115,21 +117,25 @@ public class MainActivity extends AppCompatActivity {
                         subscriber.onError(e);
                     }
                 })
+                // .map(ss -> ss + "_map")
                 .subscribeOn(Schedulers.io())
                 .subscribe(s -> {
-                    System.out.println(s);
+                    System.out.println("subscribe > " + s);
                 }, throwable -> {
                     throwable.printStackTrace();
                 });
+        System.out.println("end 01 : " + (System.currentTimeMillis() - ttt));
     }
 
     @SuppressLint("CheckResult")
     void observable02() {
-        Observable.just("Hello")
+        Observable.just("just")
                 .map(ss -> ss + "-seo")
                 .subscribe(ss -> System.out.println(ss));
 
-        Observable.just("Hello")
+        System.out.println("-----------------------------------------------------");
+
+        Observable.just("just")
                 .map(ss -> ss + "-seo")
                 .map(ss -> ss.hashCode())
                 .map(i -> Integer.toString(i))
@@ -139,24 +145,24 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("CheckResult")
     void observable03() {
         System.out.println("start 03 : " + (System.currentTimeMillis() - ttt));
-        Observable.defer((Callable<ObservableSource<String>>) () -> Observable.just(getHeavyData()))
+        Observable.defer(() -> Observable.just(delayTime(3000)))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(ss -> System.out.println("Completed!!"));
+                .subscribe(ss -> System.out.println(ss + " Completed!!"));
         System.out.println("end 03 : " + (System.currentTimeMillis() - ttt));
-
     }
 
+    @SuppressLint("CheckResult")
     void observable04() {
         System.out.println("start 04 : " + (System.currentTimeMillis() - ttt));
-        Observable.fromCallable(() -> getHeavyData())
+        Observable.fromCallable(() -> delayTime(5000))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(ss -> System.out.println("Completed!!"));
+                .subscribe(ss -> System.out.println(ss + ".. Completed!!"));
         System.out.println("end 04 : " + (System.currentTimeMillis() - ttt));
-
     }
 
+    @SuppressLint("CheckResult")
     void Single01() {
 //        Single<String> stringSingle = Single.fromCallable(() -> getHeavyData());
 //        stringSingle.subscribeOn(Schedulers.io());
@@ -193,18 +199,19 @@ public class MainActivity extends AppCompatActivity {
 
     private String getHeavyData() {
         try {
-            Thread.sleep(3000);
+            Thread.sleep(2000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         return "Just Item";
     }
 
-    private void getHeavyData2() {
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+    String delayTime(int delayTime) {
+        long saveTime = System.currentTimeMillis();
+        long currTime = 0;
+        while (currTime - saveTime < delayTime) {
+            currTime = System.currentTimeMillis();
         }
+        return "delayTime=" + delayTime;
     }
 }
