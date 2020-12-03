@@ -3,11 +3,8 @@ package tech.thdev.java_udemy_sample.view.main;
 import android.annotation.SuppressLint;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.PersistableBundle;
-import android.util.Log;
 import android.view.View;
 
-import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -15,28 +12,17 @@ import androidx.appcompat.widget.Toolbar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
-import org.reactivestreams.Subscriber;
-import org.reactivestreams.Subscription;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
-import io.reactivex.Scheduler;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 import tech.thdev.java_udemy_sample.R;
-import tech.thdev.java_udemy_sample.util.ActivityUtil;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -59,11 +45,11 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         // static Util을 이용하여 replace 처리
-        ActivityUtil
-                .replaceFragmentToActivity(
-                        getSupportFragmentManager(),
-                        MainFragment.getInstance(),
-                        R.id.frame_layout);
+        // ActivityUtil
+        //         .replaceFragmentToActivity(
+        //                 getSupportFragmentManager(),
+        //                 MainFragment.getInstance(),
+        //                 R.id.frame_layout);
 
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -78,6 +64,8 @@ public class MainActivity extends AppCompatActivity {
         // http://gaemi.github.io/rxjava/2016/12/02/async-task-with-rxjava.html
 
         /**
+         * RXJava
+         *
          * 1. create
          * onNext(), onError(), onCompleted()를 적절히 호출하여야 합니다
          * onComplete를 호출하여 최종적으로 Observable의 데이터 방출 작업은 끝났음을 알립니다.
@@ -103,16 +91,40 @@ public class MainActivity extends AppCompatActivity {
          * 비동기작업에 적절함.발행하는 Item 은 없이 작업의 종료만을 전파하는 Completable
          */
         // RXJava
-//        observable01(); // just
-//        observable02(); // create
+        observable01(); // create
+        // observable02(); // just
 //        observable03(); // defer
 //        observable04(); // fromCallable
-        Single01(); // Single
+//         Single01(); // Single
 //        Completable01(); // Completable
 
     }
 
+    @SuppressLint("CheckResult")
     void observable01() {
+        Observable.create(
+                subscriber -> {
+                    try {
+                        subscriber.onNext("Hello");
+                        subscriber.onNext("My name is");
+                        subscriber.onNext(getHeavyData());
+                        subscriber.onNext("Gaemi");
+                        subscriber.onComplete(); // 호출안하면 대기상태, Single, Completable 사용하면 호출필요없음.
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        subscriber.onError(e);
+                    }
+                })
+                .subscribeOn(Schedulers.io())
+                .subscribe(s -> {
+                    System.out.println(s);
+                }, throwable -> {
+                    throwable.printStackTrace();
+                });
+    }
+
+    @SuppressLint("CheckResult")
+    void observable02() {
         Observable.just("Hello")
                 .map(ss -> ss + "-seo")
                 .subscribe(ss -> System.out.println(ss));
@@ -122,22 +134,6 @@ public class MainActivity extends AppCompatActivity {
                 .map(ss -> ss.hashCode())
                 .map(i -> Integer.toString(i))
                 .subscribe(ss -> System.out.println(ss));
-    }
-
-    void observable02() {
-        Observable.create(
-                subscriber -> {
-                    subscriber.onNext("Hello");
-                    subscriber.onNext("My name is");
-                    subscriber.onNext(getHeavyData());
-                    subscriber.onNext("Gaemi");
-                    subscriber.onComplete(); // 호출안하면 대기상태, Single, Completable 사용하면 호출필요없음.
-                })
-                .subscribeOn(Schedulers.io())
-                .subscribe(s -> {
-                    System.out.println(s);
-                })
-        ;
     }
 
     void observable03() {
@@ -174,7 +170,7 @@ public class MainActivity extends AppCompatActivity {
         Single.fromCallable(() -> getHeavyData())
                 .subscribeOn(Schedulers.io())
                 .subscribe(str -> {
-                    System.out.println((System.currentTimeMillis() - ttt)+" Single Completed!!");
+                    System.out.println((System.currentTimeMillis() - ttt) + " Single Completed!!");
                 }, it -> {
                     it.printStackTrace();
                 });
@@ -187,7 +183,7 @@ public class MainActivity extends AppCompatActivity {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(() -> {
-                    System.out.println((System.currentTimeMillis() - ttt)+" Completable01 Completed!!");
+                    System.out.println((System.currentTimeMillis() - ttt) + " Completable01 Completed!!");
                 }, throwable -> {
                     throwable.printStackTrace();
                 });

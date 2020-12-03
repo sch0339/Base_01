@@ -201,7 +201,6 @@ class MainActivity : AppCompatActivity() {
             }
             delayTime(1000)
 
-
             println("main01 2.. ${System.currentTimeMillis() - time}")
         }
     }
