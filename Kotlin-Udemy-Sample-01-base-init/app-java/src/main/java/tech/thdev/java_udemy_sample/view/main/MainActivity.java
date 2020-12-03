@@ -136,6 +136,7 @@ public class MainActivity extends AppCompatActivity {
                 .subscribe(ss -> System.out.println(ss));
     }
 
+    @SuppressLint("CheckResult")
     void observable03() {
         System.out.println("start 03 : " + (System.currentTimeMillis() - ttt));
         Observable.defer((Callable<ObservableSource<String>>) () -> Observable.just(getHeavyData()))
