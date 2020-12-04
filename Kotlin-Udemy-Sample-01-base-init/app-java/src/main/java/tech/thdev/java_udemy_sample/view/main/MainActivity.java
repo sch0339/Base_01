@@ -20,7 +20,9 @@ import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
 import io.reactivex.Single;
+import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.annotations.NonNull;
 import io.reactivex.schedulers.Schedulers;
 import tech.thdev.java_udemy_sample.R;
 
@@ -91,11 +93,11 @@ public class MainActivity extends AppCompatActivity {
          * 비동기작업에 적절함.발행하는 Item 은 없이 작업의 종료만을 전파하는 Completable
          */
         // RXJava
-        // observable01(); // create
+        observable01(); // create
         // observable02(); // just
         // observable03(); // defer
-        observable04(); // fromCallable
-//         Single01(); // Single
+        // observable04(); // fromCallable
+//        Single01(); // Single
 //        Completable01(); // Completable
 
     }
@@ -106,10 +108,12 @@ public class MainActivity extends AppCompatActivity {
         Observable.create(
                 subscriber -> {
                     try {
+                        String[] list = {"1", "3"};
                         subscriber.onNext("Hello");
                         subscriber.onNext("My name is");
                         subscriber.onNext(getHeavyData());
                         subscriber.onNext(delayTime(3000));
+                        subscriber.onNext(list[4]);
                         subscriber.onNext("Gaemi");
                         subscriber.onComplete(); // 호출안하면 대기상태, Single, Completable 사용하면 호출필요없음.
                     } catch (Exception e) {
@@ -125,6 +129,9 @@ public class MainActivity extends AppCompatActivity {
                     throwable.printStackTrace();
                 });
         System.out.println("end 01 : " + (System.currentTimeMillis() - ttt));
+
+        Observable.create(s -> s.onNext("aaaaa"))
+                .subscribe(s -> System.out.println("subscribe > " + s));
     }
 
     @SuppressLint("CheckResult")
@@ -140,6 +147,15 @@ public class MainActivity extends AppCompatActivity {
                 .map(ss -> ss.hashCode())
                 .map(i -> Integer.toString(i))
                 .subscribe(ss -> System.out.println(ss));
+
+        System.out.println("-----------------------------------------------------");
+
+        Observable source = Observable.just(1).doOnSubscribe(s -> System.out.println("doOnSubscribe"));
+        source.subscribe(ss -> System.out.println(ss + "subscribe"));
+        System.out.println("-----------------------------------------------------");
+        Observable.just(2).doOnSubscribe(s -> System.out.println("doOnSubscribe")).subscribe(ss -> System.out.println(ss + "subscribe"));
+        System.out.println("-----------------------------------------------------");
+        Observable.just(3).subscribe(ss -> System.out.println(ss + "subscribe"));
     }
 
     @SuppressLint("CheckResult")
@@ -164,24 +180,20 @@ public class MainActivity extends AppCompatActivity {
 
     @SuppressLint("CheckResult")
     void Single01() {
-//        Single<String> stringSingle = Single.fromCallable(() -> getHeavyData());
-//        stringSingle.subscribeOn(Schedulers.io());
-//        stringSingle.observeOn(AndroidSchedulers.mainThread());
-//        stringSingle.subscribe(str -> {
-//            System.out.println("Completed!!");
-//        }, throwable -> {
-//            throwable.printStackTrace();
-//        });
-
         System.out.println("start Single01 : " + (System.currentTimeMillis() - ttt));
-        Single.fromCallable(() -> getHeavyData())
+        Single.fromCallable(() -> delayTime(5000))
                 .subscribeOn(Schedulers.io())
                 .subscribe(str -> {
-                    System.out.println((System.currentTimeMillis() - ttt) + " Single Completed!!");
+                    System.out.println("str=" + str + " Single Completed!!");
                 }, it -> {
                     it.printStackTrace();
                 });
         System.out.println("end Single01 : " + (System.currentTimeMillis() - ttt));
+
+//        Single
+//                .do(() ->delayTime(5000))
+//                .subscribeOn(Schedulers.io())
+//                .subscribe();
     }
 
     void Completable01() {
