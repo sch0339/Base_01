@@ -104,13 +104,19 @@ public class MainActivity extends AppCompatActivity {
         Integer[] orgs = {10, 5, 0};
         Observable<Integer> source = Observable.fromArray(orgs);
         source
-                .map(data -> 1000 / data)
+//                .map(data -> 1000 / data)
                 .doOnNext(data -> Log.d("doOnNext " + data))
                 .doOnComplete(() -> Log.d("doOnComplete"))
                 .doOnError(e -> e.printStackTrace())
                 .subscribe(Log::i);
 
+        System.out.println("-----------------------------------------------------");
 
+        Observable<Integer> source1 = Observable.just(0)
+                .doOnSubscribe(s -> Log.d("doOnSubscribe..."));
+        source1.subscribe(n -> Log.d("Next" + n)
+                , e -> Log.d("Error" + e)
+                , () -> Log.d("Complete"));
     }
 
     @SuppressLint("CheckResult")
