@@ -3,11 +3,8 @@ package tech.thdev.java_udemy_sample.view.main;
 import android.annotation.SuppressLint;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.PersistableBundle;
-import android.util.Log;
 import android.view.View;
 
-import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -15,28 +12,19 @@ import androidx.appcompat.widget.Toolbar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
-import org.reactivestreams.Subscriber;
-import org.reactivestreams.Subscription;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.ObservableSource;
-import io.reactivex.Scheduler;
 import io.reactivex.Single;
+import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.annotations.NonNull;
 import io.reactivex.schedulers.Schedulers;
 import tech.thdev.java_udemy_sample.R;
-import tech.thdev.java_udemy_sample.util.ActivityUtil;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -59,11 +47,11 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         // static Util을 이용하여 replace 처리
-        ActivityUtil
-                .replaceFragmentToActivity(
-                        getSupportFragmentManager(),
-                        MainFragment.getInstance(),
-                        R.id.frame_layout);
+        // ActivityUtil
+        //         .replaceFragmentToActivity(
+        //                 getSupportFragmentManager(),
+        //                 MainFragment.getInstance(),
+        //                 R.id.frame_layout);
 
         fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -78,6 +66,8 @@ public class MainActivity extends AppCompatActivity {
         // http://gaemi.github.io/rxjava/2016/12/02/async-task-with-rxjava.html
 
         /**
+         * RXJava
+         *
          * 1. create
          * onNext(), onError(), onCompleted()를 적절히 호출하여야 합니다
          * onComplete를 호출하여 최종적으로 Observable의 데이터 방출 작업은 끝났음을 알립니다.
@@ -89,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
          * 내부적으로 ScalarDisposable를 사용하는데, onNext를 통하여 데이터를 방출하고, onCompleted까지 호출하고 있습니다.
          *
          * 3. defer
-         * Observable은 create나 just와 다르게 옵져버가 구독하기전까지는 Observable를 생성하지 않습니다. defer는 subscribe가 호출될 때 할당
+         * Observable은 create나 just와 다르게 옵져버가 구독하기전까지는 Observable를 생성하지 않습니다. 즉 defer는 subscribe가 호출될 때 할당
          *
          * 4. fromCallable
          * defer와 마찬가지로 스트림 생성을 지연하는 효과를 가지고 있습니다. 하나의 차이점이 존재하는데 이는 Observable에서 데이터를 방출(emit) 할 때
@@ -103,82 +93,107 @@ public class MainActivity extends AppCompatActivity {
          * 비동기작업에 적절함.발행하는 Item 은 없이 작업의 종료만을 전파하는 Completable
          */
         // RXJava
-//        observable01(); // just
-//        observable02(); // create
-//        observable03(); // defer
-//        observable04(); // fromCallable
-        Single01(); // Single
+        observable01(); // create
+        // observable02(); // just
+        // observable03(); // defer
+        // observable04(); // fromCallable
+//        Single01(); // Single
 //        Completable01(); // Completable
 
     }
 
+    @SuppressLint("CheckResult")
     void observable01() {
-        Observable.just("Hello")
+        System.out.println("start 01 : " + (System.currentTimeMillis() - ttt));
+        Observable.create(
+                subscriber -> {
+                    try {
+                        String[] list = {"1", "3"};
+                        subscriber.onNext("Hello");
+                        subscriber.onNext("My name is");
+                        subscriber.onNext(getHeavyData());
+                        subscriber.onNext(delayTime(3000));
+                        subscriber.onNext(list[4]);
+                        subscriber.onNext("Gaemi");
+                        subscriber.onComplete(); // 호출안하면 대기상태, Single, Completable 사용하면 호출필요없음.
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        subscriber.onError(e);
+                    }
+                })
+                // .map(ss -> ss + "_map")
+                .subscribeOn(Schedulers.io())
+                .subscribe(s -> {
+                    System.out.println("subscribe > " + s);
+                }, throwable -> {
+                    throwable.printStackTrace();
+                });
+        System.out.println("end 01 : " + (System.currentTimeMillis() - ttt));
+
+        Observable.create(s -> s.onNext("aaaaa"))
+                .subscribe(s -> System.out.println("subscribe > " + s));
+    }
+
+    @SuppressLint("CheckResult")
+    void observable02() {
+        Observable.just("just")
                 .map(ss -> ss + "-seo")
                 .subscribe(ss -> System.out.println(ss));
 
-        Observable.just("Hello")
+        System.out.println("-----------------------------------------------------");
+
+        Observable.just("just")
                 .map(ss -> ss + "-seo")
                 .map(ss -> ss.hashCode())
                 .map(i -> Integer.toString(i))
                 .subscribe(ss -> System.out.println(ss));
+
+        System.out.println("-----------------------------------------------------");
+
+        Observable source = Observable.just(1).doOnSubscribe(s -> System.out.println("doOnSubscribe"));
+        source.subscribe(ss -> System.out.println(ss + "subscribe"));
+        System.out.println("-----------------------------------------------------");
+        Observable.just(2).doOnSubscribe(s -> System.out.println("doOnSubscribe")).subscribe(ss -> System.out.println(ss + "subscribe"));
+        System.out.println("-----------------------------------------------------");
+        Observable.just(3).subscribe(ss -> System.out.println(ss + "subscribe"));
     }
 
-    void observable02() {
-        Observable.create(
-                subscriber -> {
-                    subscriber.onNext("Hello");
-                    subscriber.onNext("My name is");
-                    subscriber.onNext(getHeavyData());
-                    subscriber.onNext("Gaemi");
-                    subscriber.onComplete(); // 호출안하면 대기상태, Single, Completable 사용하면 호출필요없음.
-                })
-                .subscribeOn(Schedulers.io())
-                .subscribe(s -> {
-                    System.out.println(s);
-                })
-        ;
-    }
-
+    @SuppressLint("CheckResult")
     void observable03() {
         System.out.println("start 03 : " + (System.currentTimeMillis() - ttt));
-        Observable.defer((Callable<ObservableSource<String>>) () -> Observable.just(getHeavyData()))
+        Observable.defer(() -> Observable.just(delayTime(3000)))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(ss -> System.out.println("Completed!!"));
+                .subscribe(ss -> System.out.println(ss + " Completed!!"));
         System.out.println("end 03 : " + (System.currentTimeMillis() - ttt));
-
     }
 
+    @SuppressLint("CheckResult")
     void observable04() {
         System.out.println("start 04 : " + (System.currentTimeMillis() - ttt));
-        Observable.fromCallable(() -> getHeavyData())
+        Observable.fromCallable(() -> delayTime(5000))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(ss -> System.out.println("Completed!!"));
+                .subscribe(ss -> System.out.println(ss + ".. Completed!!"));
         System.out.println("end 04 : " + (System.currentTimeMillis() - ttt));
-
     }
 
+    @SuppressLint("CheckResult")
     void Single01() {
-//        Single<String> stringSingle = Single.fromCallable(() -> getHeavyData());
-//        stringSingle.subscribeOn(Schedulers.io());
-//        stringSingle.observeOn(AndroidSchedulers.mainThread());
-//        stringSingle.subscribe(str -> {
-//            System.out.println("Completed!!");
-//        }, throwable -> {
-//            throwable.printStackTrace();
-//        });
-
         System.out.println("start Single01 : " + (System.currentTimeMillis() - ttt));
-        Single.fromCallable(() -> getHeavyData())
+        Single.fromCallable(() -> delayTime(5000))
                 .subscribeOn(Schedulers.io())
                 .subscribe(str -> {
-                    System.out.println((System.currentTimeMillis() - ttt)+" Single Completed!!");
+                    System.out.println("str=" + str + " Single Completed!!");
                 }, it -> {
                     it.printStackTrace();
                 });
         System.out.println("end Single01 : " + (System.currentTimeMillis() - ttt));
+
+//        Single
+//                .do(() ->delayTime(5000))
+//                .subscribeOn(Schedulers.io())
+//                .subscribe();
     }
 
     void Completable01() {
@@ -187,7 +202,7 @@ public class MainActivity extends AppCompatActivity {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(() -> {
-                    System.out.println((System.currentTimeMillis() - ttt)+" Completable01 Completed!!");
+                    System.out.println((System.currentTimeMillis() - ttt) + " Completable01 Completed!!");
                 }, throwable -> {
                     throwable.printStackTrace();
                 });
@@ -196,18 +211,19 @@ public class MainActivity extends AppCompatActivity {
 
     private String getHeavyData() {
         try {
-            Thread.sleep(3000);
+            Thread.sleep(2000);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
         return "Just Item";
     }
 
-    private void getHeavyData2() {
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+    String delayTime(int delayTime) {
+        long saveTime = System.currentTimeMillis();
+        long currTime = 0;
+        while (currTime - saveTime < delayTime) {
+            currTime = System.currentTimeMillis();
         }
+        return "delayTime=" + delayTime;
     }
 }

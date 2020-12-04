@@ -1,0 +1,5 @@
+스케줄러
+http://reactivex.io/documentation/ko/scheduler.html
+
+네트워크 요청 결과를 RxJava로 처리하자 -1-
+https://eclipse-owl.tistory.com/24
