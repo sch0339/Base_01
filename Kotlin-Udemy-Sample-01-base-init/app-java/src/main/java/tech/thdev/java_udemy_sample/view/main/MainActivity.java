@@ -1,6 +1,7 @@
 package tech.thdev.java_udemy_sample.view.main;
 
 import android.annotation.SuppressLint;
+import android.log.Log;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -12,17 +13,12 @@ import androidx.appcompat.widget.Toolbar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
-import java.util.concurrent.Callable;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
-import io.reactivex.ObservableSource;
 import io.reactivex.Single;
-import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.annotations.NonNull;
 import io.reactivex.schedulers.Schedulers;
 import tech.thdev.java_udemy_sample.R;
 
@@ -93,13 +89,34 @@ public class MainActivity extends AppCompatActivity {
          * 비동기작업에 적절함.발행하는 Item 은 없이 작업의 종료만을 전파하는 Completable
          */
         // RXJava
-        observable01(); // create
+        observable00();
+//        observable01(); // create
         // observable02(); // just
         // observable03(); // defer
         // observable04(); // fromCallable
 //        Single01(); // Single
 //        Completable01(); // Completable
 
+
+    }
+
+    void observable00() {
+        Integer[] orgs = {10, 5, 0};
+        Observable<Integer> source = Observable.fromArray(orgs);
+        source
+//                .map(data -> 1000 / data)
+                .doOnNext(data -> Log.d("doOnNext " + data))
+                .doOnComplete(() -> Log.d("doOnComplete"))
+                .doOnError(e -> e.printStackTrace())
+                .subscribe(Log::i);
+
+        System.out.println("-----------------------------------------------------");
+
+        Observable<Integer> source1 = Observable.just(0)
+                .doOnSubscribe(s -> Log.d("doOnSubscribe..."));
+        source1.subscribe(n -> Log.d("Next" + n)
+                , e -> Log.d("Error" + e)
+                , () -> Log.d("Complete"));
     }
 
     @SuppressLint("CheckResult")
@@ -129,9 +146,6 @@ public class MainActivity extends AppCompatActivity {
                     throwable.printStackTrace();
                 });
         System.out.println("end 01 : " + (System.currentTimeMillis() - ttt));
-
-        Observable.create(s -> s.onNext("aaaaa"))
-                .subscribe(s -> System.out.println("subscribe > " + s));
     }
 
     @SuppressLint("CheckResult")
