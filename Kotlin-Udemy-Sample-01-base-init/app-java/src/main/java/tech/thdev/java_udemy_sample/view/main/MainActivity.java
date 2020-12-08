@@ -13,12 +13,18 @@ import androidx.appcompat.widget.Toolbar;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
+import java.util.Arrays;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.reactivex.Completable;
 import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.Observer;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.observers.DisposableObserver;
 import io.reactivex.schedulers.Schedulers;
 import tech.thdev.java_udemy_sample.R;
 
@@ -64,6 +70,9 @@ public class MainActivity extends AppCompatActivity {
         /**
          * RXJava
          *
+         * 0. 알림이벤트
+         * doOnNext() , doOnComplete(), doOnError() 라는 세 함수는 Observable의 알림 이벤트에 해당합니다.
+         *
          * 1. create
          * onNext(), onError(), onCompleted()를 적절히 호출하여야 합니다
          * onComplete를 호출하여 최종적으로 Observable의 데이터 방출 작업은 끝났음을 알립니다.
@@ -89,8 +98,8 @@ public class MainActivity extends AppCompatActivity {
          * 비동기작업에 적절함.발행하는 Item 은 없이 작업의 종료만을 전파하는 Completable
          */
         // RXJava
-        observable00();
-//        observable01(); // create
+//        observable00();
+        observable01(); // create
         // observable02(); // just
         // observable03(); // defer
         // observable04(); // fromCallable
@@ -104,24 +113,28 @@ public class MainActivity extends AppCompatActivity {
         Integer[] orgs = {10, 5, 0};
         Observable<Integer> source = Observable.fromArray(orgs);
         source
-//                .map(data -> 1000 / data)
-                .doOnNext(data -> Log.d("doOnNext " + data))
+                .map(data -> 1000 / data)
+                .doOnNext(data -> Log.d("doOnNext1 " + data))
                 .doOnComplete(() -> Log.d("doOnComplete"))
-                .doOnError(e -> e.printStackTrace())
-                .subscribe(Log::i);
+                .doOnError(e -> Log.d("doOnError"))
+//                .subscribe(Log::i);
+                .subscribe(n -> Log.d("next >" + n), e -> e.printStackTrace());
 
         System.out.println("-----------------------------------------------------");
 
         Observable<Integer> source1 = Observable.just(0)
                 .doOnSubscribe(s -> Log.d("doOnSubscribe..."));
-        source1.subscribe(n -> Log.d("Next" + n)
+        source1.subscribe(n -> Log.d("Next >" + n)
                 , e -> Log.d("Error" + e)
                 , () -> Log.d("Complete"));
+
+
     }
 
     @SuppressLint("CheckResult")
     void observable01() {
         System.out.println("start 01 : " + (System.currentTimeMillis() - ttt));
+
         Observable.create(
                 subscriber -> {
                     try {
@@ -146,6 +159,40 @@ public class MainActivity extends AppCompatActivity {
                     throwable.printStackTrace();
                 });
         System.out.println("end 01 : " + (System.currentTimeMillis() - ttt));
+
+        System.out.println("-----------------------------------------------------");
+
+        Observer<String> observable = new DisposableObserver<String>() {
+            @Override
+            public void onNext(String s) {
+                Log.d("s=" + s);
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onComplete() {
+                Log.d("onComplete");
+            }
+        };
+        Observable.create(new ObservableOnSubscribe<String>() {
+            @Override
+            public void subscribe(ObservableEmitter<String> e) throws Exception {
+                e.onNext("Hello world");
+                e.onComplete();
+            }
+        }).subscribe(observable);
+
+        System.out.println("-----------------------------------------------------");
+
+        Iterable<String> samples = Arrays.asList("banana","orange","apple","apple mango","melon","watermelon");
+        Observable.fromIterable(samples)
+                .skipWhile(s -> !s.contains("apple"))
+                .first("Not found")
+                .subscribe(s -> Log.d("s="+s));
     }
 
     @SuppressLint("CheckResult")
