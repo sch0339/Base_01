@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.log.Log;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.widget.TextView;
 
 import androidx.annotation.RequiresApi;
@@ -17,12 +18,14 @@ import java.util.concurrent.TimeUnit;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.reactivex.Completable;
+import io.reactivex.MaybeObserver;
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
 import io.reactivex.ObservableOnSubscribe;
 import io.reactivex.Observer;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.DisposableObserver;
 import io.reactivex.schedulers.Schedulers;
 import tech.thdev.java_udemy_sample.R;
@@ -76,14 +79,17 @@ public class MainActivity extends AppCompatActivity {
          */
         // RXJava
 //        observable00();
-        observable01(); // create
+//        observable01(); // create
         // observable02(); // just
         // observable03(); // defer
         // observable04(); // fromCallable
 //        Single01(); // Single
 //        Completable01(); // Completable
 
-//        rxLifeCycle01(); //  안드로이드와 UI 라이프사이클을 대체한다기 보다 구독할 때 발생할 수 있는 메모리 누수를 방지하기 위해 사용합니다.
+//        rxAsync(); //  스레드를 RxAndroid로 대체하기
+
+
+        countDownTimer(); // 카운트다운..
     }
 
     void observable00() {
@@ -104,7 +110,6 @@ public class MainActivity extends AppCompatActivity {
         source1.subscribe(n -> Log.d("Next >" + n)
                 , e -> Log.d("Error" + e)
                 , () -> Log.d("Complete"));
-
 
     }
 
@@ -167,11 +172,11 @@ public class MainActivity extends AppCompatActivity {
 
         System.out.println("-----------------------------------------------------");
 
-        Iterable<String> samples = Arrays.asList("banana","orange","apple","apple mango","melon","watermelon");
+        Iterable<String> samples = Arrays.asList("banana", "orange", "apple", "apple mango", "melon", "watermelon");
         Observable.fromIterable(samples)
                 .skipWhile(s -> !s.contains("apple"))
                 .first("Not found")
-                .subscribe(s -> Log.d("s="+s));
+                .subscribe(s -> Log.d("s=" + s));
     }
 
     @SuppressLint("CheckResult")
@@ -267,9 +272,64 @@ public class MainActivity extends AppCompatActivity {
         return "delayTime=" + delayTime;
     }
 
-    private void rxLifeCycle01() {
-//        Observable.just("hello rxworld")
-//                .compose(bindToLifecycle())
-//                .subscribe(s->toolbar.setTitle(s));
+    private void rxAsync() {
+        Observable.just("Hello", "rx", "world")
+                .reduce((x, y) -> x + " " + y)
+                .observeOn(AndroidSchedulers.mainThread())
+//                .subscribe(getObserver());
+                .subscribe(s -> textView1.setText(s + " useMaybe"),
+                        e -> e.printStackTrace()
+                );
+    }
+
+    private MaybeObserver<String> getObserver() {
+        return new MaybeObserver<String>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+            }
+
+            @Override
+            public void onSuccess(String s) {
+                Log.d("onSuccess");
+                textView1.setText(s + " useMaybe");
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                e.printStackTrace();
+            }
+
+            @Override
+            public void onComplete() {
+                Log.d("onComplete..");
+            }
+        };
+    }
+
+    //
+    private static final int MILLISINFUTURE= 11*1000;
+    private static final int COUNT_DOWN_INTERVAL=1000;
+    CountDownTimer mCountDownTimer;
+    int count = 0;
+    private void countDownTimer() {
+        count = 10;
+        initCountDownTask();
+        mCountDownTimer.start();
+    }
+
+    public void initCountDownTask() {
+        mCountDownTimer=new CountDownTimer(MILLISINFUTURE,COUNT_DOWN_INTERVAL) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                textView1.setText(String.valueOf(count--));
+            }
+
+            @Override
+            public void onFinish() {
+                textView1.setText("Finish .");
+            }
+        };
     }
 }
+
+
