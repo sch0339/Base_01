@@ -68,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
         // http://gaemi.github.io/rxjava/2016/12/02/async-task-with-rxjava.html
 
         /**
-         * RXJava.mac2
+         * RXJava
          *
          * 0. 알림이벤트
          * doOnNext() , doOnComplete(), doOnError() 라는 세 함수는 Observable의 알림 이벤트에 해당합니다.
@@ -98,8 +98,8 @@ public class MainActivity extends AppCompatActivity {
          * 비동기작업에 적절함.발행하는 Item 은 없이 작업의 종료만을 전파하는 Completable
          */
         // RXJava
-//        observable00();
-        observable01(); // create
+        observable00();
+//        observable01(); // create
         // observable02(); // just
         // observable03(); // defer
         // observable04(); // fromCallable
