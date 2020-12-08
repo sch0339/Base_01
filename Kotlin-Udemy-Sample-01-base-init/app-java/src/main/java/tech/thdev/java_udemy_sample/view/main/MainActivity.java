@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -74,15 +75,15 @@ public class MainActivity extends AppCompatActivity {
          * 비동기작업에 적절함.발행하는 Item 은 없이 작업의 종료만을 전파하는 Completable
          */
         // RXJava
-        observable00();
-//        observable01(); // create
+//        observable00();
+        observable01(); // create
         // observable02(); // just
         // observable03(); // defer
         // observable04(); // fromCallable
 //        Single01(); // Single
 //        Completable01(); // Completable
 
-        rxLifeCycle01(); //  안드로이드와 UI 라이프사이클을 대체한다기 보다 구독할 때 발생할 수 있는 메모리 누수를 방지하기 위해 사용합니다.
+//        rxLifeCycle01(); //  안드로이드와 UI 라이프사이클을 대체한다기 보다 구독할 때 발생할 수 있는 메모리 누수를 방지하기 위해 사용합니다.
     }
 
     void observable00() {
@@ -119,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
                         subscriber.onNext("My name is");
                         subscriber.onNext(getHeavyData());
                         subscriber.onNext(delayTime(3000));
-                        subscriber.onNext(list[4]);
+//                        subscriber.onNext(list[4]);
                         subscriber.onNext("Gaemi");
                         subscriber.onComplete(); // 호출안하면 대기상태, Single, Completable 사용하면 호출필요없음.
                     } catch (Exception e) {
@@ -129,6 +130,8 @@ public class MainActivity extends AppCompatActivity {
                 })
                 // .map(ss -> ss + "_map")
                 .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+//                .debounce(1000, TimeUnit.MILLISECONDS) // 이벤트를 그룹화하여 특정시간이 지난 후 하나의 이벤트만 발생하도록 한다.
                 .subscribe(s -> {
                     System.out.println("subscribe > " + s);
                 }, throwable -> {
