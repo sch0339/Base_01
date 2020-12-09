@@ -460,7 +460,7 @@ class MainActivity : AppCompatActivity() {
          * with: 인자로 받는 객체를, 블록의 리시버로 전달하고, 블록의 결과값을 반환한다.
          *       Non-Nullable 객체이여야하며, 결과가 필요하지 않은 경우
          */
-        // let..
+        // let....
         var person: Person? = Person("park", "jieun")
         person = null
         val bb: String? =
