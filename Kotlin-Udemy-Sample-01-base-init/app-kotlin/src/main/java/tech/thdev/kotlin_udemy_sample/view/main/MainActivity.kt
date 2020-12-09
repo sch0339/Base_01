@@ -29,10 +29,10 @@ class MainActivity : AppCompatActivity() {
         findViewById<Toolbar>(R.id.toolbar)
     }
 
-    private val myPresenter : MyPresenter by inject() // 3. 의존성 주입, 비슷한 방법으로 by viewModel() 태그를 이용해 viewModel을 생성해 사용하면 된다
+    private val myPresenter: MyPresenter by inject() // 3. 의존성 주입, 비슷한 방법으로 by viewModel() 태그를 이용해 viewModel을 생성해 사용하면 된다
 
-    private val cert : Cert by inject()
-    
+    private val cert: Cert by inject()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -74,14 +74,13 @@ class MainActivity : AppCompatActivity() {
 //        }
 
 
-
 //        coroutineScope()
-//        letTest()
+        letTest()
 
 //        noException1() // try
 //        noException2() // runCatching
 
-        runObservable() // Observable(통보를 하는 "어떤 클래스"), Observer(통보를 받는 "다른 클래스")
+//        runObservable() // Observable(통보를 하는 "어떤 클래스"), Observer(통보를 받는 "다른 클래스")
 
         /**
          * object
@@ -463,11 +462,14 @@ class MainActivity : AppCompatActivity() {
          */
         // let
         var person: Person? = Person("park", "jieun")
-//        person = null
-        val bb: String? = person?.let { // person. > test, person?. > null
-            "test"
-        }
+        person = null
+        val bb: String? =
+            person.let { // person. > test, person?. > null(?:앞의변수가null이면 null을 반환하고, null아닐경우 오른편 실행)
+                Log.d("run let..")
+                "test"
+            }
         Log.d("bb=$bb")
+        Log.d("person="+person?.firstName)
 
         // apply
         person?.apply {
@@ -484,7 +486,8 @@ class MainActivity : AppCompatActivity() {
         test(Person("park", "jieun"))
 
         // with
-        with(person!!) {
+        var personw: Person? = Person("park", "jieun")
+        with(personw!!) {
             Log.d("name=${lastName + firstName}")
         }
     }
@@ -604,6 +607,7 @@ class MainActivity : AppCompatActivity() {
         val dog by lazy {
             Dog("Person03")
         }
+
         fun walk() {
             dog.walk()
         }
@@ -629,7 +633,7 @@ class MainActivity : AppCompatActivity() {
     fun koin01() {
         val str = myPresenter.sayHello()
         Log.d("myPresenter=${str}")
-        
+
         // plus비슷하게구현
         val str2 = cert.sayCert()
         Log.d("cert=${str2}")
