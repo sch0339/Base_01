@@ -469,7 +469,7 @@ class MainActivity : AppCompatActivity() {
                 "test"
             }
         Log.d("bb=$bb")
-        Log.d("person="+person?.firstName)
+        Log.d("person=" + person?.firstName)
 
         // apply
         person?.apply {
