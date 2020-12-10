@@ -48,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
         textView1.setText("test");
 
         /**
-         * RXJava.test..
+         * RXJava.main2..
          *
          * 0. 알림이벤트
          * doOnNext() , doOnComplete(), doOnError() 라는 세 함수는 Observable의 알림 이벤트에 해당합니다.
