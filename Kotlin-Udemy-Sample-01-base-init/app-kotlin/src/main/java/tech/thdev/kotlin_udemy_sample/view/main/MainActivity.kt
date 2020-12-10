@@ -462,14 +462,15 @@ class MainActivity : AppCompatActivity() {
          */
         // let
         var person: Person? = Person("park", "jieun")
-        person = null
+//        person = null
         val bb: String? =
             person.let { // person. > test, person?. > null(?:앞의변수가null이면 null을 반환하고, null아닐경우 오른편 실행)
-                Log.d("run let..")
+                Log.d("run let..it=" + it)
                 "test"
             }
         Log.d("bb=$bb")
         Log.d("person=" + person?.firstName)
+        Log.d("----------------------------------------------let")
 
         // apply
         person?.apply {
@@ -477,6 +478,7 @@ class MainActivity : AppCompatActivity() {
             firstName = "first"
         }
         Log.d("lastName=${person?.lastName}")
+        Log.d("----------------------------------------------apply")
 
         // run
         fun test(person: Person) = person.run {
@@ -484,12 +486,15 @@ class MainActivity : AppCompatActivity() {
             Log.d("name=${lastName + firstName}")
         }
         test(Person("park", "jieun"))
+        Log.d("----------------------------------------------run")
 
         // with
-        var personw: Person? = Person("park", "jieun")
+        var personw: Person? = Person("seo", "chang")
         with(personw!!) {
             Log.d("name=${lastName + firstName}")
         }
+        Log.d("personw=" + personw.lastName)
+        Log.d("----------------------------------------------with")
     }
 
     class Person(var lastName: String = "1", var firstName: String = "2")
