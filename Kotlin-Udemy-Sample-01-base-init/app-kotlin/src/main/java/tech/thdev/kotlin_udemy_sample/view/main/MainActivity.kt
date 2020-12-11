@@ -454,13 +454,17 @@ class MainActivity : AppCompatActivity() {
 
         /**
          * Scope Functions(객체를 사용할 때 Scope(범위, 영역) 를 일시적으로 만들어서 속성(property)나 함수를 처리하는 용도로 사용되는 함수)
+         *
          * let: 블록 내의 결과물을 반환하고 싶을 경우, null값이어도 실행됨.
          *      T?.let { } 형태에서의 let 블럭 안에는 non-null 만 들어올 수 있어 non-null 체크
          *      let 함수를 사용하면 객체의 상태를 변경할 수 있다.
-         * apply: 수신 객체 자신을 반환하는 경우.객체 초기화.
+         * with: non-null의 객체를 사용하고 블럭의 return 값이 필요하지 않을 때 사용한다.
          * run: 객체 없이 호출하며 익명함수로 사용할 수 있으며, 블럭내에 처리할 작업들을 넣어주면 된다. 반환값도 가능하다.
-         *       run 함수를 호출하는 객체를 블록의 리시버로 전달하고, 블록의 결과 값을 반환한다.
-         * with: Non-Nullable 객체이여야하며, 결과가 필요하지 않은 경우
+         *      run 함수를 호출하는 객체를 블록의 리시버로 전달하고, 블록의 결과 값을 반환한다.
+         * apply: 블럭 함수의 입력을 람다 리시버로 받았기 때문에 블럭 안에서 객체의 프로퍼티를 호출할 때 it이나 this를 사용할 필요가 없다.
+         *        run과 유사하지만 블럭에서 return 값을 받지 않으며 자기 자신인 T를 반환한다는 점이 다르다.
+         *
+         *
          *
          */
         // let
@@ -482,29 +486,34 @@ class MainActivity : AppCompatActivity() {
         Log.d("resultIt=${resultIt}")
         Log.d("----------------------------------------------let")
 
-        // apply
-        person?.apply {
-            firstName = "first"
-            lastName = "last.."
-        }
-        Log.d("lastName=${person?.lastName}")
-        Log.d("----------------------------------------------apply")
-
-        // run
-        fun test(person: Person) = person.run {
-            // person을 수신객체로 변환하여 사용
-            Log.d("name=${firstName + lastName}")
-        }
-        test(Person("park", "jieun"))
-        Log.d("----------------------------------------------run")
-
         // with
         var personw: Person? = Person("seo", "chang")
         with(personw!!) {
-            Log.d("name=${firstName + lastName}")
+            Log.d("name=${firstName}, ${this.lastName}")
+            //자기자신을 반환해야 하는 경우 it이 아닌 this를 사용한다
         }
         Log.d("personw=${personw}")
         Log.d("----------------------------------------------with")
+
+        // run
+        val nextName = person?.run {
+            lastName = "hyun"
+        }
+        Log.d("nextName=${nextName}")
+        Log.d("----------------------------------------------run")
+
+        // apply
+        var result = person?.apply {
+            firstName = "first"
+            lastName = "last.."
+        }
+        Log.d("person=${person}")
+        Log.d("result=${result}")
+        Log.d("----------------------------------------------apply")
+
+
+
+
     }
 
     data class Person(var firstName: String = "1", var lastName: String = "2")
