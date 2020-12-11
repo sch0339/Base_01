@@ -453,29 +453,39 @@ class MainActivity : AppCompatActivity() {
         println("암시적 라벨 사용으로 이곳에 도달 합니다.")
 
         /**
-         * let: 널체크후 코드실행하고 싶을 경우, 블록 내의 결과물을 반환하고 싶을 경우, null값이어도 실행됨.
+         * Scope Functions(객체를 사용할 때 Scope(범위, 영역) 를 일시적으로 만들어서 속성(property)나 함수를 처리하는 용도로 사용되는 함수)
+         * let: 블록 내의 결과물을 반환하고 싶을 경우, null값이어도 실행됨.
+         *      T?.let { } 형태에서의 let 블럭 안에는 non-null 만 들어올 수 있어 non-null 체크
+         *      let 함수를 사용하면 객체의 상태를 변경할 수 있다.
          * apply: 수신 객체 자신을 반환하는 경우.객체 초기화.
          * run: 객체 없이 호출하며 익명함수로 사용할 수 있으며, 블럭내에 처리할 작업들을 넣어주면 된다. 반환값도 가능하다.
          *       run 함수를 호출하는 객체를 블록의 리시버로 전달하고, 블록의 결과 값을 반환한다.
-         * with: 인자로 받는 객체를, 블록의 리시버로 전달하고, 블록의 결과값을 반환한다.
-         *       Non-Nullable 객체이여야하며, 결과가 필요하지 않은 경우
+         * with: Non-Nullable 객체이여야하며, 결과가 필요하지 않은 경우
+         *
          */
         // let
         var person: Person? = Person("park", "jieun")
 //        person = null
-        val bb: String? =
+        val str: String? =
             person.let { // person. > test, person?. > null(?:앞의변수가null이면 null을 반환하고, null아닐경우 오른편 실행)
                 Log.d("run let..it=" + it)
                 "test"
             }
-        Log.d("bb=$bb")
-        Log.d("person=" + person?.firstName)
+        Log.d("str=$str")
+        Log.d("person=" + person)
+
+        val resultIt = person?.let {
+            it.firstName = "James"
+            it.lastName = "56"
+            it // (T)->R 부분에서의 R에 해당하는 반환값.
+        }
+        Log.d("resultIt=${resultIt}")
         Log.d("----------------------------------------------let")
 
         // apply
         person?.apply {
-            lastName = "last.."
             firstName = "first"
+            lastName = "last.."
         }
         Log.d("lastName=${person?.lastName}")
         Log.d("----------------------------------------------apply")
@@ -483,7 +493,7 @@ class MainActivity : AppCompatActivity() {
         // run
         fun test(person: Person) = person.run {
             // person을 수신객체로 변환하여 사용
-            Log.d("name=${lastName + firstName}")
+            Log.d("name=${firstName + lastName}")
         }
         test(Person("park", "jieun"))
         Log.d("----------------------------------------------run")
@@ -491,13 +501,13 @@ class MainActivity : AppCompatActivity() {
         // with
         var personw: Person? = Person("seo", "chang")
         with(personw!!) {
-            Log.d("name=${lastName + firstName}")
+            Log.d("name=${firstName + lastName}")
         }
-        Log.d("personw=" + personw.lastName)
+        Log.d("personw=${personw}")
         Log.d("----------------------------------------------with")
     }
 
-    class Person(var lastName: String = "1", var firstName: String = "2")
+    data class Person(var firstName: String = "1", var lastName: String = "2")
 
     // ..................................................................................................................
     // 변화를 통보하는 Observable
