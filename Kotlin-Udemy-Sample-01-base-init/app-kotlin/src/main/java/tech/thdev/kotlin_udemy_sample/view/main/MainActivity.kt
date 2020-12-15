@@ -462,9 +462,8 @@ class MainActivity : AppCompatActivity() {
          * run: 객체 없이 호출하며 익명함수로 사용할 수 있으며, 블럭내에 처리할 작업들을 넣어주면 된다. 반환값도 가능하다.
          *      run 함수를 호출하는 객체를 블록의 리시버로 전달하고, 블록의 결과 값을 반환한다.
          * apply: 블럭 함수의 입력을 람다 리시버로 받았기 때문에 블럭 안에서 객체의 프로퍼티를 호출할 때 it이나 this를 사용할 필요가 없다.
-         *        run과 유사하지만 블럭에서 return 값을 받지 않으며 자기 자신인 T를 반환한다는 점이 다르다.
-         *
-         *
+         *        run과 유사하지만 블럭에서 return 값을 받지 않으며 자기 자신인 T를 반환한다는 점이 다르다.(객체초기화, 변경)
+         * also : T의 확장함수이고, 블럭 함수의 입력으로 람다 리시버를 받지 않고 this로 받았다. apply와 마찬가지로 T를 반환
          *
          */
         // let
@@ -504,16 +503,27 @@ class MainActivity : AppCompatActivity() {
 
         // apply
         var result = person?.apply {
-            firstName = "first"
-            lastName = "last.."
+            firstName = "first1"
+            lastName = "last1"
         }
         Log.d("person=${person}")
         Log.d("result=${result}")
         Log.d("----------------------------------------------apply")
 
+        // also
+        var result_also = person?.also {
+            it.firstName = "first2"
+            it.lastName = "last2"
+        }
+        Log.d("person=${person}")
+        Log.d("result_also=${result}")
 
-
-
+        val numbers = arrayListOf("one", "two", "three")
+        numbers
+            .also { Log.d("add 하기 전에 print: $it") }
+            .add("four")
+        Log.d("----------------------------------------------apply")
+        
     }
 
     data class Person(var firstName: String = "1", var lastName: String = "2")
