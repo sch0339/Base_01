@@ -523,7 +523,7 @@ class MainActivity : AppCompatActivity() {
             .also { Log.d("add 하기 전에 print: $it") }
             .add("four")
         Log.d("----------------------------------------------apply")
-        
+        ttt
     }
 
     data class Person(var firstName: String = "1", var lastName: String = "2")
