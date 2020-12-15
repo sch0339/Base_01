@@ -66,16 +66,16 @@ class MainActivity : AppCompatActivity() {
 //        exception03()
 
 //        CoroutineScope()
-//        runBlocking{
-//            launch(Dispatchers.Default) {
-//                Log.d("launch")
-//                Log.d("test1===${test1()}")
-//            }
-//        }
+        runBlocking{
+            launch(Dispatchers.Default) {
+                Log.d("launch")
+                Log.d("test1===${test1()}")
+            }
+        }
 
 
 //        coroutineScope()
-        letTest()
+//        letTest()
 
 //        noException1() // try
 //        noException2() // runCatching
@@ -189,6 +189,8 @@ class MainActivity : AppCompatActivity() {
             CoroutineScope(Dispatchers.Main).launch {
                 // 외부 코루틴 블록이 취소 되어도 끝까지 수행됨
                 println("main01 in.. ${System.currentTimeMillis() - time}")
+
+
             }
 
 
@@ -400,15 +402,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     suspend fun test1() = suspendCancellableCoroutine<Boolean> {
-        println("test1() 1=${System.currentTimeMillis() - time}")
+        Log.d("test1() 1=${System.currentTimeMillis() - time}")
 
-        delayTime(5000)
+        delayTime(3000)
 
         // cancel(), resume() 취소, 진행, 둘중먼저 호출하는것 실행..
         it.resume(false)
         it.cancel()
 
-        println("test1() 2=${System.currentTimeMillis() - time}")
+        Log.d("test1() 2=${System.currentTimeMillis() - time}")
     }
 
     suspend fun test2() {

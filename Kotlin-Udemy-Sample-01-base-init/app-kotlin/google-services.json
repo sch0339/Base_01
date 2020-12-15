@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "596939881137",
+    "project_id": "test-292df",
+    "storage_bucket": "test-292df.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:596939881137:android:aa59734a3c40b9758d8090",
+        "android_client_info": {
+          "package_name": "tech.thdev.kotlin_udemy_sample"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "596939881137-3dig5qpdtji8cqt3ja4oqngo54ri7lfu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAObEyB4Cm_iplHoRxVUOsE_G8Z_NDHkiA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "596939881137-3dig5qpdtji8cqt3ja4oqngo54ri7lfu.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
