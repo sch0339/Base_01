@@ -1,7 +1,8 @@
 apply plugin: 'com.android.application'
+apply plugin: 'com.google.gms.google-services'
+apply plugin: 'com.google.firebase.crashlytics'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
-
 
 android {
     compileSdkVersion compileSdkVersionInfo
@@ -66,4 +67,10 @@ dependencies {
     implementation 'org.koin:koin-android:2.0.1'
     implementation 'org.koin:koin-android-viewmodel:2.0.1'
     implementation 'org.koin:koin-java:2.0.1'
+
+    // firebase
+    implementation platform('com.google.firebase:firebase-bom:26.1.1')
+    implementation 'com.google.android.gms:play-services-basement:17.4.0'
+    implementation 'com.google.firebase:firebase-crashlytics-ktx'
+    implementation 'com.google.firebase:firebase-analytics-ktx'
 }

@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.Gson
 import kotlinx.coroutines.*
 import okhttp3.*
@@ -14,6 +15,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONObject
 import org.koin.android.ext.android.inject
 import tech.thdev.kotlin_udemy_sample.R
+import tech.thdev.kotlin_udemy_sample.util.MyFunction
 import tech.thdev.kotlin_udemy_sample.util.PapagoDTO
 import tech.thdev.kotlin_udemy_sample.util.replaceFragmentToActivity
 import tech.thdev.kotlin_udemy_sample.view.koin.MyPresenter
@@ -34,6 +36,10 @@ class MainActivity : AppCompatActivity() {
     private val cert: Cert by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        FirebaseCrashlytics.getInstance().log("MainActivity.onCreate")
+
+        FirebaseCrashlytics.getInstance().setUserId("seoch1216")
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
@@ -53,8 +59,10 @@ class MainActivity : AppCompatActivity() {
 
         // 코루틴.coroutine
 //        main01()
+//        main02()
 
 //        launch01()
+        withContext01()
 //        launch02()
 //        async01()
 
@@ -66,12 +74,12 @@ class MainActivity : AppCompatActivity() {
 //        exception03()
 
 //        CoroutineScope()
-        runBlocking{
-            launch(Dispatchers.Default) {
-                Log.d("launch")
-                Log.d("test1===${test1()}")
-            }
-        }
+//        runBlocking{
+//            launch(Dispatchers.Default) {
+//                Log.d("launch")
+//                Log.d("test1===${test1()}")
+//            }
+//        }
 
 
 //        coroutineScope()
@@ -135,10 +143,12 @@ class MainActivity : AppCompatActivity() {
 //        di01()
 //        koin01()
 
-
+//        invoke01() // invoke.람다.
     }
 
     /**
+     * Coroutine: 비동기처리.(suspend 호출까지 순차처리)
+     *
      * GlobalScope: 전역.싱글톤.사용자제.
      * CoroutineScope: lifecycle에 따라 ondestory()에서 job.cancel() 요청(ex MyActivity 참조.)
      *
@@ -163,7 +173,6 @@ class MainActivity : AppCompatActivity() {
         CoroutineScope(Dispatchers.Main).async {
         }
 
-
         val scope = CoroutineScope(Dispatchers.Main)
         scope.launch {
             // 포그라운드 작업
@@ -172,7 +181,6 @@ class MainActivity : AppCompatActivity() {
             // CoroutineContext 를 변경하여 백그라운드로 전환하여 작업을 처리합니다
         }
 
-
         val scope2 = CoroutineScope(Dispatchers.Main)
         CoroutineScope(Dispatchers.Default).launch {
             // 새로운 CoroutineScope 로 동작하는 백그라운드 작업
@@ -180,41 +188,45 @@ class MainActivity : AppCompatActivity() {
         scope2.launch(Dispatchers.Default) {
             // 기존 CoroutineScope 는 유지하되, 작업만 백그라운드로 처리
         }
+
+        runBlocking {
+            launch {
+            }
+        }
     }
 
     fun main01() {
         val scope = CoroutineScope(Dispatchers.Main)
         val job = scope.launch {
-            println("main01 1.. ${System.currentTimeMillis() - time}")
+            Log.d("main01 1.. ${System.currentTimeMillis() - time}")
             CoroutineScope(Dispatchers.Main).launch {
                 // 외부 코루틴 블록이 취소 되어도 끝까지 수행됨
-                println("main01 in.. ${System.currentTimeMillis() - time}")
-
-
+                Log.d("main01 2..별도 코루틴... ${System.currentTimeMillis() - time}")
             }
-
 
             // runBlocking() 함수는 코드 블록이 작업을 완료 하기를 기다립니다.
             // 현재 쓰레드(여기선 main 쓰레드)를 블록킹 시키고 새로운 코루틴을 실행시킨다.
             runBlocking {
                 delay(2000)  // delay
-                println("main01 runBlocking.. ${System.currentTimeMillis() - time}")
+                Log.d("main01 3.. runBlocking.. ${System.currentTimeMillis() - time}")
             }
-            delayTime(1000)
+            delayTime(1000)  // 1 > 3 > 4 > 2
+//            delay(1000)       // 1 > 3 > 2 > 4 (delay에 포함된 suspend)
 
-            println("main01 2.. ${System.currentTimeMillis() - time}")
+            Log.d("main01 4.. ${System.currentTimeMillis() - time}")
         }
     }
 
     fun main02() {
         GlobalScope.launch { // launch a new coroutine in background and continue
             delay(1000L) // non-blocking delay for 1 second (default time unit is ms)
-            println("main02 World! ${System.currentTimeMillis() - time}")
+            Log.d("main02 World! ${System.currentTimeMillis() - time}")
         }
-        println("main02 Hello,${System.currentTimeMillis() - time}")
         runBlocking {     // 현재 쓰레드(여기선 main 쓰레드)를 블록킹 시키고 새로운 코루틴을 실행시킨다.
-            delay(10000L)  // ... while we delay for 2 seconds to keep JVM alive
+            delay(2000L)  // ... while we delay for 2 seconds to keep JVM alive
+            Log.d("main02 runBlocking")
         }
+        Log.d("main02 Hello,${System.currentTimeMillis() - time}")
     }
 
     // #1 > #2 > #3 출력
@@ -230,6 +242,18 @@ class MainActivity : AppCompatActivity() {
             println("Hello #1")      // launch는 코드 블럭을 마치 백그라운드 쓰레드에서 실행시키는 것과 비슷하게 비동기 식으로 동작시킨다. 따라서 launch블락 다음 줄 #1 이 바로 호출된다.
         }
         println("end #3")
+    }
+
+    fun withContext01() {
+        println("withContext01 start______________________________________")
+        runBlocking {
+            withContext(Dispatchers.Default) {
+                delay(1000L)
+                println("withContext01 world #2")
+            }
+            println("withContext01 Hello #1")
+        }
+        println("withContext01 end #3")
     }
 
     // #2 > #1 > #3 으로 출력하기,
@@ -315,9 +339,14 @@ class MainActivity : AppCompatActivity() {
     fun exception01() {
         runBlocking {
             GlobalScope.launch(Dispatchers.Default) {
-                launch {
-                    throw Exception()
+                try {
+                    launch {
+                        throw Exception()
+                    }
+                }catch (e: Exception) {
+                    e.printStackTrace()
                 }
+
             }
         }
     }
@@ -327,7 +356,6 @@ class MainActivity : AppCompatActivity() {
      * SupervisorJob() : 자식들에 대한 exception이 독립적으로 하도록 한다.
      */
     private val exjob = Job()
-
     //    private val exjob = SupervisorJob()
     private val coroutineScope = CoroutineScope(Dispatchers.IO + exjob)
     fun exception02() = runBlocking {
@@ -675,6 +703,24 @@ class MainActivity : AppCompatActivity() {
         Log.d("cert=${str2}")
     }
 
+
+    fun invoke01() {
+        var str1 = MyFunction.invoke("test1")
+        Log.d("str1=${str1}")
+
+        var str2 = MyFunction("test2") // kotlin에서는 invoke 함수명 생략가능.
+        Log.d("str2=${str2}")
+
+        // toUpperCase는 타입이 무엇일까? Int도, String도 아니다. String을 받고, 다시 String을 반환하는 (String) -> String 타입
+        val toUpperCase = { str: String -> str.toUpperCase() }
+        Log.d("toUpperCase=${toUpperCase("abc")}")
+
+        val strList = listOf("a","b","c")
+        println(strList.map(toUpperCase))
+
+        val strList2 = listOf("a","b","c")
+        println(strList2.map { str: String -> str.toUpperCase() }) // [A,B,C]
+    }
 }
 
 

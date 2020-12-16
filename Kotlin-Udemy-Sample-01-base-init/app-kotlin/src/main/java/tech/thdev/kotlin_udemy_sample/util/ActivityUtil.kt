@@ -14,3 +14,15 @@ fun AppCompatActivity.replaceFragmentToActivity(fragment: Fragment, frameId: Int
     transaction.replace(frameId, fragment)
     transaction.commit()
 }
+
+
+/**
+ * invoke.람다.
+ */
+
+object MyFunction {
+    operator fun invoke(str: String): String {
+        return str.toUpperCase()
+    }
+
+}
