@@ -523,6 +523,11 @@ class MainActivity : AppCompatActivity() {
 
         val result = runCatching {
             "".toInt()
+        }.onSuccess {
+            Log.d("onSuccess..")
+        }.onFailure {
+            Log.d("onFailure...")
+            it.printStackTrace()
         }
         Log.d("result="+result)
         try {
