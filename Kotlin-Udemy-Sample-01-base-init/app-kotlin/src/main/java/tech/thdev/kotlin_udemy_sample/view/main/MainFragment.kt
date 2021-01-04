@@ -1,5 +1,6 @@
 package tech.thdev.kotlin_udemy_sample.view.main
 
+import android.log.Log
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.LayoutInflater
@@ -103,5 +104,9 @@ class MainFragment : Fragment() {
          */
 
         return one + two
+    }
+
+    fun start() {
+        Log.d("start")
     }
 }

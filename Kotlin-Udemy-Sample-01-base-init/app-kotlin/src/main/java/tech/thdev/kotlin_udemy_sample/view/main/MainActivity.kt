@@ -2,6 +2,7 @@ package tech.thdev.kotlin_udemy_sample.view.main
 
 import android.log.Log
 import android.os.Bundle
+import android.text.TextUtils
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -23,6 +24,7 @@ import tech.thdev.kotlin_udemy_sample.view.plus.Cert
 import java.io.IOException
 import java.util.*
 import kotlin.coroutines.resume
+import tech.thdev.kotlin_udemy_sample.view.main.MainFragment
 
 class MainActivity : AppCompatActivity() {
     val time = System.currentTimeMillis()
@@ -60,9 +62,10 @@ class MainActivity : AppCompatActivity() {
         // 코루틴.coroutine
 //        main01()
 //        main02()
+//        withTimeout01()
 
 //        launch01()
-        withContext01()
+//        withContext01()
 //        launch02()
 //        async01()
 
@@ -86,7 +89,7 @@ class MainActivity : AppCompatActivity() {
 //        letTest()
 
 //        noException1() // try
-//        noException2() // runCatching
+        noException2() // runCatching
 
 //        runObservable() // Observable(통보를 하는 "어떤 클래스"), Observer(통보를 받는 "다른 클래스")
 
@@ -144,6 +147,8 @@ class MainActivity : AppCompatActivity() {
 //        koin01()
 
 //        invoke01() // invoke.람다.
+
+//        takeIf01()
     }
 
     /**
@@ -217,6 +222,24 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    fun withTimeout01() {
+        runBlocking {
+            try {
+                withTimeout(1300L) {
+                    repeat(1000) { i ->
+                        Log.d("I'm sleeping $i ...")
+                        delay(500L)
+                    }
+                }
+            } catch (te: TimeoutCancellationException) {
+                Log.d("Timetout!!!")
+            }
+        }
+
+        var aa: String? = null
+        Log.d("aa=" + aa?.length ?: "")
+    }
+
     fun main02() {
         GlobalScope.launch { // launch a new coroutine in background and continue
             delay(1000L) // non-blocking delay for 1 second (default time unit is ms)
@@ -254,6 +277,16 @@ class MainActivity : AppCompatActivity() {
             println("withContext01 Hello #1")
         }
         println("withContext01 end #3")
+
+        val b = 0.1
+        val c = b.isInfinite()
+        val a = 3 / 0.1
+        val d = a.isInfinite()
+        Log.d("a=" + a + ", d=" + d)
+
+        var aa = ""
+        Log.d("aa=" + aa.toByteArray())
+
     }
 
     // #2 > #1 > #3 으로 출력하기,
@@ -343,7 +376,7 @@ class MainActivity : AppCompatActivity() {
                     launch {
                         throw Exception()
                     }
-                }catch (e: Exception) {
+                } catch (e: Exception) {
                     e.printStackTrace()
                 }
 
@@ -356,6 +389,7 @@ class MainActivity : AppCompatActivity() {
      * SupervisorJob() : 자식들에 대한 exception이 독립적으로 하도록 한다.
      */
     private val exjob = Job()
+
     //    private val exjob = SupervisorJob()
     private val coroutineScope = CoroutineScope(Dispatchers.IO + exjob)
     fun exception02() = runBlocking {
@@ -465,14 +499,39 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun noException2() {
-        val k: String? = null
-        kotlin.runCatching {
+        val k: String? = "null"
+        runCatching {
             k ?: throw NullPointerException("noException2() k is null")
         }.onSuccess {
-            println("noException2() is not null")
+            Log.d("onSuccess")
+
+            // 여기서 맵핑하면 오류발생시 밖으로 빠진다.
+            // "".toInt()
         }.onFailure { e ->
-            e.printStackTrace()
+            Log.d("onFailure")
+        }.mapCatching {
+            // 여기서 맵핑하면 오류발생시 recoverCatching에 떨어진다.
+            Log.d("mapCatching")
+
+            "".toInt()
+        }.recoverCatching {
+            Log.d("recoverCatching")
+        }.also {
+            Log.d("try... finally")
         }
+        Log.d("----------------------------------------------------------------------------")
+
+        val result = runCatching {
+            "".toInt()
+        }
+        Log.d("result="+result)
+        try {
+            result.getOrThrow()
+        } catch (e: Exception) {
+            Log.d("0...")
+        }
+        result.getOrDefault(1).let { Log.d("it="+it) } // > 1
+        result.getOrElse { Log.d("2..") } // > 2
     }
 
     fun letTest() {
@@ -642,7 +701,8 @@ class MainActivity : AppCompatActivity() {
                 var str = response!!.body!!.string()
                 println(str)
 
-                var papagoDTO: PapagoDTO = Gson().fromJson<PapagoDTO>(str, PapagoDTO::class.java)
+                var papagoDTO: PapagoDTO =
+                    Gson().fromJson<PapagoDTO>(str, PapagoDTO::class.java)
                 println(papagoDTO.message!!.result!!.translatedText)
             }
 
@@ -715,11 +775,25 @@ class MainActivity : AppCompatActivity() {
         val toUpperCase = { str: String -> str.toUpperCase() }
         Log.d("toUpperCase=${toUpperCase("abc")}")
 
-        val strList = listOf("a","b","c")
+        val strList = listOf("a", "b", "c")
         println(strList.map(toUpperCase))
 
-        val strList2 = listOf("a","b","c")
+        val strList2 = listOf("a", "b", "c")
         println(strList2.map { str: String -> str.toUpperCase() }) // [A,B,C]
+    }
+
+    /**
+     * takeIf()는 null이 아닌 객체에서 호출될 수 있고, predicate(Boolean을 리턴하는)함수를 인자로 받는다.
+     * 만약 predicate가 true를 반환하는 식이라면, takeIf()는 null아닌 그 객체를 리턴할 것이고, predicate가 만족되지 않아 false를 반환한다면 null을 리턴할 것이다.
+     */
+    fun takeIf01() {
+        val user = "KaSha"
+        val str = "Sha"
+
+        val index01 = user.indexOf(str).takeIf { it >= 0 } ?: -1
+        val index02 = user.indexOf(str).takeUnless { it < 0 } ?: -1
+
+        Log.d("index01=" + index01 + ", index02=" + index02)
     }
 }
 
