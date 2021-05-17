@@ -97,19 +97,19 @@ public class MainActivity extends AppCompatActivity {
         Observable<Integer> source = Observable.fromArray(orgs);
         source
                 .map(data -> 1000 / data)
-                .doOnNext(data -> Log.d("doOnNext1 " + data))
-                .doOnComplete(() -> Log.d("doOnComplete"))
-                .doOnError(e -> Log.d("doOnError"))
+                .doOnNext(data -> Logger.d("doOnNext1 " + data))
+                .doOnComplete(() -> Logger.d("doOnComplete"))
+                .doOnError(e -> Logger.d("doOnError"))
 //                .subscribe(Log::i);
-                .subscribe(n -> Log.d("next >" + n), e -> e.printStackTrace());
+                .subscribe(n -> Logger.d("next >" + n), e -> e.printStackTrace());
 
         System.out.println("-----------------------------------------------------");
 
         Observable<Integer> source1 = Observable.just(0)
-                .doOnSubscribe(s -> Log.d("doOnSubscribe..."));
-        source1.subscribe(n -> Log.d("Next >" + n)
-                , e -> Log.d("Error" + e)
-                , () -> Log.d("Complete"));
+                .doOnSubscribe(s -> Logger.d("doOnSubscribe..."));
+        source1.subscribe(n -> Logger.d("Next >" + n)
+                , e -> Logger.d("Error" + e)
+                , () -> Logger.d("Complete"));
 
     }
 
@@ -149,7 +149,7 @@ public class MainActivity extends AppCompatActivity {
         Observer<String> observable = new DisposableObserver<String>() {
             @Override
             public void onNext(String s) {
-                Log.d("s=" + s);
+                Logger.d("s=" + s);
             }
 
             @Override
@@ -159,7 +159,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onComplete() {
-                Log.d("onComplete");
+                Logger.d("onComplete");
             }
         };
         Observable.create(new ObservableOnSubscribe<String>() {
@@ -176,7 +176,7 @@ public class MainActivity extends AppCompatActivity {
         Observable.fromIterable(samples)
                 .skipWhile(s -> !s.contains("apple"))
                 .first("Not found")
-                .subscribe(s -> Log.d("s=" + s));
+                .subscribe(s -> Logger.d("s=" + s));
     }
 
     @SuppressLint("CheckResult")
@@ -290,7 +290,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onSuccess(String s) {
-                Log.d("onSuccess");
+                Logger.d("onSuccess");
                 textView1.setText(s + " useMaybe");
             }
 
@@ -301,7 +301,7 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onComplete() {
-                Log.d("onComplete..");
+                Logger.d("onComplete..");
             }
         };
     }

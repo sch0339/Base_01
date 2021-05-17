@@ -1,14 +1,15 @@
 package tech.thdev.kotlin_udemy_sample.view.main
 
-import android.log.Log
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
-import android.text.TextUtils
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.Gson
+import com.orhanobut.logger.Logger
 import kotlinx.coroutines.*
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
@@ -24,7 +25,9 @@ import tech.thdev.kotlin_udemy_sample.view.plus.Cert
 import java.io.IOException
 import java.util.*
 import kotlin.coroutines.resume
-import tech.thdev.kotlin_udemy_sample.view.main.MainFragment
+
+val Context.kotlinValue: String
+    get() = "kotlinHello"
 
 class MainActivity : AppCompatActivity() {
     val time = System.currentTimeMillis()
@@ -79,8 +82,8 @@ class MainActivity : AppCompatActivity() {
 //        CoroutineScope()
 //        runBlocking{
 //            launch(Dispatchers.Default) {
-//                Log.d("launch")
-//                Log.d("test1===${test1()}")
+//                Logger.d("launch")
+//                Logger.d("test1===${test1()}")
 //            }
 //        }
 
@@ -88,22 +91,29 @@ class MainActivity : AppCompatActivity() {
 //        coroutineScope()
 //        letTest()
 
-//        noException1() // try
-        noException2() // runCatching
 
+//        runCatching01()
+//        runCatching02()
+//        runCatching03()
 //        runObservable() // Observable(통보를 하는 "어떤 클래스"), Observer(통보를 받는 "다른 클래스")
 
+//        for01()
+//        null01()
+
+//        when01()
+
+        timer01()
         /**
          * object
          * 1. 싱글턴 클래스로 만들 때
          * 2. 익명 클래스 객체를 생성할 때(익명객체는 이름이 없는 객체로, 한번만 사용되고 재사용되지 않을 때 사용합니다. )
          */
 //        var car = CarFactory.makeCar(150)
-//        Log.d("car1.size=${CarFactory.cars.size}") // static 메소드를 호출하는 것처럼 보입니다.
+//        Logger.d("car1.size=${CarFactory.cars.size}") // static 메소드를 호출하는 것처럼 보입니다.
 //
 //        var car2_1 = Car2.makeCar(220) // Car 클래스 안에 Factory 패턴을 정의하고 싶을 수 있습니다.(companion object)
 //        var car2_2 = Car2.Factory.makeCar(240)
-//        Log.d("car2.size=${Car2.cars.size}")
+//        Logger.d("car2.size=${Car2.cars.size}")
 //
 //        // 익명 클래스 객체를 생성할 때
 //        start(object : Vehicle {
@@ -123,10 +133,10 @@ class MainActivity : AppCompatActivity() {
         // 줄임사용(kotain interface가 아닌 자바인터페이스이고, 그인터페이스가 딱하나의 메소드를 가질때)
 //        fab.setOnClickListener(object : View.OnClickListener {
 //            override fun onClick(v: View?) {
-//                Log.d("setOnClickListener")
+//                Logger.d("setOnClickListener")
 //            }
 //        })
-//        fab.setOnClickListener { Log.d("setOnClickListener") }
+//        fab.setOnClickListener { Logger.d("setOnClickListener") }
 
 //        okhttp()
 
@@ -149,6 +159,8 @@ class MainActivity : AppCompatActivity() {
 //        invoke01() // invoke.람다.
 
 //        takeIf01()
+//        trim01()
+
     }
 
     /**
@@ -203,23 +215,24 @@ class MainActivity : AppCompatActivity() {
     fun main01() {
         val scope = CoroutineScope(Dispatchers.Main)
         val job = scope.launch {
-            Log.d("main01 1.. ${System.currentTimeMillis() - time}")
+            Logger.d("main01 1.. ${System.currentTimeMillis() - time}")
             CoroutineScope(Dispatchers.Main).launch {
                 // 외부 코루틴 블록이 취소 되어도 끝까지 수행됨
-                Log.d("main01 2..별도 코루틴... ${System.currentTimeMillis() - time}")
+                Logger.d("main01 2..별도 코루틴... ${System.currentTimeMillis() - time}")
             }
 
             // runBlocking() 함수는 코드 블록이 작업을 완료 하기를 기다립니다.
             // 현재 쓰레드(여기선 main 쓰레드)를 블록킹 시키고 새로운 코루틴을 실행시킨다.
             runBlocking {
                 delay(2000)  // delay
-                Log.d("main01 3.. runBlocking.. ${System.currentTimeMillis() - time}")
+                Logger.d("main01 3.. runBlocking.. ${System.currentTimeMillis() - time}")
             }
             delayTime(1000)  // 1 > 3 > 4 > 2
 //            delay(1000)       // 1 > 3 > 2 > 4 (delay에 포함된 suspend)
 
-            Log.d("main01 4.. ${System.currentTimeMillis() - time}")
+            Logger.d("main01 4.. ${System.currentTimeMillis() - time}")
         }
+
     }
 
     fun withTimeout01() {
@@ -227,29 +240,29 @@ class MainActivity : AppCompatActivity() {
             try {
                 withTimeout(1300L) {
                     repeat(1000) { i ->
-                        Log.d("I'm sleeping $i ...")
+                        Logger.d("I'm sleeping $i ...")
                         delay(500L)
                     }
                 }
             } catch (te: TimeoutCancellationException) {
-                Log.d("Timetout!!!")
+                Logger.d("Timetout!!!")
             }
         }
 
         var aa: String? = null
-        Log.d("aa=" + aa?.length ?: "")
+        Logger.d("aa=" + aa?.length ?: "")
     }
 
     fun main02() {
         GlobalScope.launch { // launch a new coroutine in background and continue
             delay(1000L) // non-blocking delay for 1 second (default time unit is ms)
-            Log.d("main02 World! ${System.currentTimeMillis() - time}")
+            Logger.d("main02 World! ${System.currentTimeMillis() - time}")
         }
         runBlocking {     // 현재 쓰레드(여기선 main 쓰레드)를 블록킹 시키고 새로운 코루틴을 실행시킨다.
             delay(2000L)  // ... while we delay for 2 seconds to keep JVM alive
-            Log.d("main02 runBlocking")
+            Logger.d("main02 runBlocking")
         }
-        Log.d("main02 Hello,${System.currentTimeMillis() - time}")
+        Logger.d("main02 Hello,${System.currentTimeMillis() - time}")
     }
 
     // #1 > #2 > #3 출력
@@ -282,10 +295,10 @@ class MainActivity : AppCompatActivity() {
         val c = b.isInfinite()
         val a = 3 / 0.1
         val d = a.isInfinite()
-        Log.d("a=" + a + ", d=" + d)
+        Logger.d("a=" + a + ", d=" + d)
 
         var aa = ""
-        Log.d("aa=" + aa.toByteArray())
+        Logger.d("aa=" + aa.toByteArray())
 
     }
 
@@ -330,41 +343,41 @@ class MainActivity : AppCompatActivity() {
      * GlobalScope 사용을 피하자.
      */
     fun global01() {
-        Log.d("global01", "thread1=" + Thread.currentThread().name)
+        Logger.d("global01", "thread1=" + Thread.currentThread().name)
         GlobalScope.launch {
-            Log.d("global01", "done something in Coroutine thread=" + Thread.currentThread().name)
+            Logger.d("global01", "done something in Coroutine thread=" + Thread.currentThread().name)
             delay(2000)
-            Log.d("global01", "done something in Coroutine thread=" + Thread.currentThread().name)
+            Logger.d("global01", "done something in Coroutine thread=" + Thread.currentThread().name)
         }
-        Log.d("global01", "thread2=" + Thread.currentThread().name)
+        Logger.d("global01", "thread2=" + Thread.currentThread().name)
     }
 
     fun global02() {
         runBlocking {
             GlobalScope.launch {
-                Log.d(
+                Logger.d(
                     "global02",
                     "done something in Coroutine thread1=" + Thread.currentThread().name
                 )
                 delay(2000)
-                Log.d(
+                Logger.d(
                     "global02",
                     "done something in Coroutine thread2=" + Thread.currentThread().name
                 )
             }
             var value: Int = async {
-                Log.d("global02", "async thread=" + Thread.currentThread().name)
+                Logger.d("global02", "async thread=" + Thread.currentThread().name)
                 1 + 2
             }.await()
-            Log.d("global02", "value1=$value , thread2=" + Thread.currentThread().name)
+            Logger.d("global02", "value1=$value , thread2=" + Thread.currentThread().name)
 
-            Log.d("global02", "Do something on IO thread")
+            Logger.d("global02", "Do something on IO thread")
             val name =
                 withContext(Dispatchers.IO) {    // async와 동일한 역할을 하는 키워드입니다. 차이점은 await()을 호출할 필요가 없다는 것입니다. 결과가 리턴될 때까지 기다립니다.
                     delay(2000)
                     "My name is Android"
                 }
-            Log.d("global02", "value2=$name , thread2=" + Thread.currentThread().name)
+            Logger.d("global02", "value2=$name , thread2=" + Thread.currentThread().name)
         }
     }
 
@@ -394,15 +407,15 @@ class MainActivity : AppCompatActivity() {
     private val coroutineScope = CoroutineScope(Dispatchers.IO + exjob)
     fun exception02() = runBlocking {
         with(coroutineScope) {
-            Log.d("parent scrope")
+            Logger.d("parent scrope")
             val firstChildren = launch {
-                Log.d("first children is failing")
+                Logger.d("first children is failing")
                 throw Exception("first children is exception") // exception발생시 부모에게 통지
             }
             val secondChildren = launch {
-                Log.d("secend children is success")
+                Logger.d("secend children is success")
                 delay(500)
-                Log.d("secend children is delay 500s")
+                Logger.d("secend children is delay 500s")
             }
             firstChildren.join()
             secondChildren.join()
@@ -412,7 +425,7 @@ class MainActivity : AppCompatActivity() {
     // launch 예외처리
     fun exception03() {
         val handler = CoroutineExceptionHandler { _, exception ->
-            Log.d("launch, $exception handled! ")
+            Logger.d("launch, $exception handled! ")
         }
 
         runBlocking {
@@ -433,7 +446,7 @@ class MainActivity : AppCompatActivity() {
                         throw Exception()
                     }
                 } catch (e: Exception) {
-                    Log.d("TAG", "withContext, $e handled!")
+                    Logger.d("TAG", "withContext, $e handled!")
                 }
             }
         }
@@ -442,9 +455,9 @@ class MainActivity : AppCompatActivity() {
     fun coroutineScope() = runBlocking {
         CoroutineScope(Dispatchers.Default).launch {
 //            delay(100)
-            Log.d("aaaa2")
+            Logger.d("aaaa2")
         }
-        Log.d("aaaaa1")
+        Logger.d("aaaaa1")
 
     }
 
@@ -464,7 +477,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     suspend fun test1() = suspendCancellableCoroutine<Boolean> {
-        Log.d("test1() 1=${System.currentTimeMillis() - time}")
+        Logger.d("test1() 1=${System.currentTimeMillis() - time}")
 
         delayTime(3000)
 
@@ -472,7 +485,7 @@ class MainActivity : AppCompatActivity() {
         it.resume(false)
         it.cancel()
 
-        Log.d("test1() 2=${System.currentTimeMillis() - time}")
+        Logger.d("test1() 2=${System.currentTimeMillis() - time}")
     }
 
     suspend fun test2() {
@@ -483,60 +496,102 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    fun noException1() {
-        val k: String? = null
-        try {
-            if (k != null) {
-                println("noException1() is not null")
-            } else {
-                throw NullPointerException("noException1() k is null")
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        } finally {
-            println("noException1() finally")
+    fun runCatching01() {
+        val k: String? = "null"
+        runCatching {
+//            k ?: throw NullPointerException("runCatching01() k is null")
+            "".toInt()
+        }.onSuccess {
+            Logger.d("onSuccess it=" + it)
+
+            //여기서 맵핑하면 오류발생시 밖으로 빠진다.
+            // "".toInt()
+        }.onFailure { e ->
+            Logger.d("onFailure")
+        }.also {
+            Logger.d("try... finally")
         }
     }
 
-    fun noException2() {
-        val k: String? = "null"
+    fun runCatching02() {
+//        runCatching {
+//            3.14
+//        }.map {
+//            "".toInt() // 밖으로 빠져나감..
+//        }.onSuccess {
+//            Logger.d("map it="+it)
+//        }.onFailure {
+//            Logger.d("onFailure..")
+//        }
+
         runCatching {
-            k ?: throw NullPointerException("noException2() k is null")
-        }.onSuccess {
-            Log.d("onSuccess")
-
-            // 여기서 맵핑하면 오류발생시 밖으로 빠진다.
-            // "".toInt()
-        }.onFailure { e ->
-            Log.d("onFailure")
+            3.24
         }.mapCatching {
-            // 여기서 맵핑하면 오류발생시 recoverCatching에 떨어진다.
-            Log.d("mapCatching")
+            Logger.d("mapCatching")
+            "".toInt()
+        }.onSuccess {
+            Logger.d("mapCatching onSuccess")
+        }.onFailure {
+            Logger.d("mapCatching onFailure..")
+        }
+        Logger.d("----------------------------------------------------------------------------2")
 
+        runCatching {
+            3
             "".toInt()
         }.recoverCatching {
-            Log.d("recoverCatching")
-        }.also {
-            Log.d("try... finally")
+            Logger.d("recover recoverCatching..")
+            9
+        }.onSuccess {
+            Logger.d("recover onSuccess it=" + it)
+        }.onFailure {
+            Logger.d("recover onFailure..")
         }
-        Log.d("----------------------------------------------------------------------------")
+        Logger.d("----------------------------------------------------------------------------3")
 
         val result = runCatching {
             "".toInt()
         }.onSuccess {
-            Log.d("onSuccess..")
+            Logger.d("get onSuccess..")
         }.onFailure {
-            Log.d("onFailure...")
-            it.printStackTrace()
+            Logger.d("get onFailure...")
         }
-        Log.d("result="+result)
-        try {
-            result.getOrThrow()
-        } catch (e: Exception) {
-            Log.d("0...")
-        }
-        result.getOrDefault(1).let { Log.d("it="+it) } // > 1
-        result.getOrElse { Log.d("2..") } // > 2
+        var result1 = result.getOrDefault(1) // 성공이면 결과값, 실패면 디폴트 값을 반환
+        var result2 = result.getOrElse {
+            when (it) {
+                is NullPointerException -> 0
+                is NumberFormatException -> 10
+                else -> 99
+            }
+        }     // 성공이면 결과값, 실패면 지정된 코드를 실행
+        Logger.d("result1=" + result1.toString() + ", result2=" + result2)
+        Logger.d("----------------------------------------------------------------------------4")
+
+        var sss = "aa\\/bb\\/cc"
+        sss = sss.replace("\\", "")
+        Logger.d("sss=" + sss)
+    }
+
+    fun runCatching03() {
+        val sendObj = JSONObject()
+        val jj = JSONObject()
+        jj.put("certificate", "/abc")
+
+        sendObj.put("result", jj)
+        Logger.d("서버에서 보내는 값(json)=" + sendObj.toString())
+
+        var str = sendObj.getJSONObject("result").toString()
+        Logger.d("앱에서 받은값=" + str)
+        str = str.replace("\\", "")
+        Logger.d("앱에서 처리값=" + str)
+
+        val set1 = JSONObject()
+        set1.put("result", str)
+        Logger.d("set1=" + set1.toString())
+
+        val set2 = JSONObject()
+        set2.put("result", JSONObject(str))
+        Logger.d("set2=" + set2.toString())
     }
 
     fun letTest() {
@@ -561,63 +616,67 @@ class MainActivity : AppCompatActivity() {
          *
          */
         // let
+        Logger.d("----------------------------------------------let")
         var person: Person? = Person("park", "jieun")
-//        person = null
+        person = null
         val str: String? =
-            person.let { // person. > test, person?. > null(?:앞의변수가null이면 null을 반환하고, null아닐경우 오른편 실행)
-                Log.d("run let..it=" + it)
+            person?.let { // person. > test, person?. > null(?:앞의변수가null이면 null을 반환하고, null아닐경우 오른편 실행)
+                Logger.d("run let..it=" + it)
                 "test"
             }
-        Log.d("str=$str")
-        Log.d("person=" + person)
+        Logger.d("str=$str")
+        Logger.d("person=" + person)
 
         val resultIt = person?.let {
             it.firstName = "James"
             it.lastName = "56"
             it // (T)->R 부분에서의 R에 해당하는 반환값.
         }
-        Log.d("resultIt=${resultIt}")
-        Log.d("----------------------------------------------let")
+        Logger.d("resultIt=${resultIt}")
+
 
         // with
+        Logger.d("----------------------------------------------with")
         var personw: Person? = Person("seo", "chang")
         with(personw!!) {
-            Log.d("name=${firstName}, ${this.lastName}")
+            Logger.d("name=${firstName}, ${this.lastName}")
+            firstName = "sss"
             //자기자신을 반환해야 하는 경우 it이 아닌 this를 사용한다
         }
-        Log.d("personw=${personw}")
-        Log.d("----------------------------------------------with")
+        Logger.d("personw=${personw}")
+
 
         // run
+        Logger.d("----------------------------------------------run")
         val nextName = person?.run {
             lastName = "hyun"
         }
-        Log.d("nextName=${nextName}")
-        Log.d("----------------------------------------------run")
+        Logger.d("nextName=${nextName}")
+
 
         // apply
+        Logger.d("----------------------------------------------apply")
         var result = person?.apply {
             firstName = "first1"
             lastName = "last1"
         }
-        Log.d("person=${person}")
-        Log.d("result=${result}")
-        Log.d("----------------------------------------------apply")
+        Logger.d("person=${person}")
+        Logger.d("result=${result}")
+
 
         // also
+        Logger.d("----------------------------------------------also")
         var result_also = person?.also {
             it.firstName = "first2"
             it.lastName = "last2"
         }
-        Log.d("person=${person}")
-        Log.d("result_also=${result}")
+        Logger.d("person=${person}")
+        Logger.d("result_also=${result}")
 
         val numbers = arrayListOf("one", "two", "three")
         numbers
-            .also { Log.d("add 하기 전에 print: $it") }
+            .also { Logger.d("add 하기 전에 print: $it") }
             .add("four")
-        Log.d("----------------------------------------------apply")
-
     }
 
     data class Person(var firstName: String = "1", var lastName: String = "2")
@@ -670,8 +729,8 @@ class MainActivity : AppCompatActivity() {
     fun lamda01() {
         val square = { number: Int -> number * number }
         val nameAge = { name: String, age: Int -> "My name is ${name} , age=${age}" }
-        Log.d("lamda01 ${square(12)}")
-        Log.d("lamda01 ${nameAge("hyun", 20)}")
+        Logger.d("lamda01 ${square(12)}")
+        Logger.d("lamda01 ${nameAge("hyun", 20)}")
     }
 
     fun lamda02() {
@@ -679,7 +738,7 @@ class MainActivity : AppCompatActivity() {
         val pizza: String.() -> String = {
             this + " Good"
         }
-        Log.d("domino".pizza())
+        Logger.d("domino".pizza())
     }
 
     fun okhttp() {
@@ -744,7 +803,7 @@ class MainActivity : AppCompatActivity() {
 
     class Dog(val name: String) {
         fun walk() {
-            Log.d("name=${name}, walk..")
+            Logger.d("name=${name}, walk..")
         }
     }
 
@@ -761,24 +820,24 @@ class MainActivity : AppCompatActivity() {
 
     fun koin01() {
         val str = myPresenter.sayHello()
-        Log.d("myPresenter=${str}")
+        Logger.d("myPresenter=${str}")
 
         // plus비슷하게구현
         val str2 = cert.sayCert()
-        Log.d("cert=${str2}")
+        Logger.d("cert=${str2}")
     }
 
 
     fun invoke01() {
         var str1 = MyFunction.invoke("test1")
-        Log.d("str1=${str1}")
+        Logger.d("str1=${str1}")
 
         var str2 = MyFunction("test2") // kotlin에서는 invoke 함수명 생략가능.
-        Log.d("str2=${str2}")
+        Logger.d("str2=${str2}")
 
         // toUpperCase는 타입이 무엇일까? Int도, String도 아니다. String을 받고, 다시 String을 반환하는 (String) -> String 타입
         val toUpperCase = { str: String -> str.toUpperCase() }
-        Log.d("toUpperCase=${toUpperCase("abc")}")
+        Logger.d("toUpperCase=${toUpperCase("abc")}")
 
         val strList = listOf("a", "b", "c")
         println(strList.map(toUpperCase))
@@ -798,9 +857,133 @@ class MainActivity : AppCompatActivity() {
         val index01 = user.indexOf(str).takeIf { it >= 0 } ?: -1
         val index02 = user.indexOf(str).takeUnless { it < 0 } ?: -1
 
-        Log.d("index01=" + index01 + ", index02=" + index02)
+        Logger.d("index01=" + index01 + ", index02=" + index02)
+    }
+
+    // 유니코드 표준에 따라 다른 공백 문자가 아닌 Java와 동일한 문자만 잘라내도록 만드는 것입니다.
+    fun trim01() {
+//        val kotlin = "\tU\t"
+//        println(kotlin)
+//
+//        val kotlin2 = "\tU\t".trim()
+//        println(kotlin2)
+//
+//        val kotlin3 = "\tU\t".trim{it <= ' '}
+//        println(kotlin3)
+//
+//        val kotlin4 = "\u00A0M\u00A0".trim()
+//        println(kotlin4)
+//
+//        val kotlin5 = "\u00A0M\u00A0".trim{it <= ' '}
+//        println(kotlin5)
+
+        val curVer = "61.1.244"
+//        val curVerString = StringBuilder()
+//        curVer.split(".").forEach {
+//            curVerString.append(it)
+//        }
+//        Logger.d("curVerString="+curVerString)
+
+        var curVerString = curVer?.substring(0, curVer.indexOf("."))
+
+        Logger.d("curVerString=" + curVerString)
+    }
+
+    fun for01() {
+        var ii = 5
+        for (i in 0..ii) {
+            Logger.d("i=" + i)
+        }
+        for (i in 0 until ii) { // 추천..
+            Logger.d("iii=" + i)
+        }
+
+        var list: MutableList<String> = mutableListOf()
+        for (i in 0..0) {
+            list.add("tttt=" + i)
+        }
+        for (i in list) {
+            Logger.d("kkk=" + i)
+        }
+
+        Logger.d("get=" + MainFragment)
+    }
+
+    fun null01() {
+        Logger.d("null01")
+        val aaa = null
+
+        aaa ?: return
+        Logger.d("not null...")
+    }
+
+    fun when01() {
+        val a: String? = ""
+        val b: String? = null
+
+        when {
+            a.isNullOrEmpty() -> {
+                Logger.d("a isNullOrEmpty")
+            }
+            b.isNullOrEmpty() -> {
+                Logger.d("b isNullOrEmpty")
+            }
+            else -> {
+                Logger.d("else1")
+            }
+        }
+
+        val type = "1"
+        when (type) {
+            "1" -> {
+                Logger.d("1")
+            }
+            else -> {
+                Logger.d("else2")
+            }
+        }
+    }
+
+    private fun isApplicationInstalled(
+        packageName: String?
+    ): Boolean {
+        val intentToResolve = Intent(Intent.ACTION_MAIN)
+        intentToResolve.addCategory(Intent.CATEGORY_LAUNCHER)
+        intentToResolve.setPackage(packageName)
+        val resolveInfo =
+            packageManager?.resolveActivity(intentToResolve, 0)
+        return resolveInfo != null
+    }
+
+    var testT: Timer? = null
+    fun timer01() {
+        Logger.d("ttttt")
+//        timer02()
+
+
+        testT?.cancel()
+        timer02()
+        delayTime(2000)
+
+        testT?.cancel()
+        Logger.d("testT="+testT)
+        testT?.cancel()
+        timer02()
+    }
+
+    fun timer02() {
+        val task: TimerTask = object : TimerTask() {
+            override fun run() {
+
+                Logger.d("timer02...111")
+            }
+        }
+        testT = Timer()
+        testT?.schedule(task, 3000)
     }
 }
+
+
 
 
 

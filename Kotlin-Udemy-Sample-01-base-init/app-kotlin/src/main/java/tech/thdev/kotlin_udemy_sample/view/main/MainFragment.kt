@@ -1,6 +1,6 @@
 package tech.thdev.kotlin_udemy_sample.view.main
 
-import android.log.Log
+import android.content.Context
 import android.os.Bundle
 import android.text.TextUtils
 import android.view.LayoutInflater
@@ -10,6 +10,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import com.orhanobut.logger.Logger
 import tech.thdev.kotlin_udemy_sample.R
 
 /**
@@ -107,6 +108,9 @@ class MainFragment : Fragment() {
     }
 
     fun start() {
-        Log.d("start")
+        Logger.d("start")
     }
 }
+
+val Context.ttt: String
+    get() = "tttxxx"
