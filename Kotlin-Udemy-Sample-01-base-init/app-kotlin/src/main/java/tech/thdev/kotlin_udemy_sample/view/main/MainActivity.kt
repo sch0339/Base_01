@@ -3,6 +3,7 @@ package tech.thdev.kotlin_udemy_sample.view.main
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.Environment
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -22,7 +23,10 @@ import tech.thdev.kotlin_udemy_sample.util.PapagoDTO
 import tech.thdev.kotlin_udemy_sample.util.replaceFragmentToActivity
 import tech.thdev.kotlin_udemy_sample.view.koin.MyPresenter
 import tech.thdev.kotlin_udemy_sample.view.plus.Cert
+import java.io.File
 import java.io.IOException
+import java.io.InputStreamReader
+import java.net.Socket
 import java.util.*
 import kotlin.coroutines.resume
 
@@ -102,7 +106,13 @@ class MainActivity : AppCompatActivity() {
 
 //        when01()
 
-        timer01()
+//        timer01()
+//        asIsTest()
+//        useTest()
+
+        // LiveData vs ObservableField
+        liveDataTest()
+
         /**
          * object
          * 1. 싱글턴 클래스로 만들 때
@@ -827,7 +837,7 @@ class MainActivity : AppCompatActivity() {
         Logger.d("cert=${str2}")
     }
 
-
+    // 람다 : (인자) -> {함수내용}
     fun invoke01() {
         var str1 = MyFunction.invoke("test1")
         Logger.d("str1=${str1}")
@@ -980,6 +990,79 @@ class MainActivity : AppCompatActivity() {
         }
         testT = Timer()
         testT?.schedule(task, 3000)
+    }
+
+    fun asIsTest() {
+        val aaa1: Any = 0
+        var vvv1: String
+        if (aaa1 is String) {
+            vvv1 = aaa1
+        } else {
+            vvv1 = "-1"
+        }
+        Logger.d("aaa1="+aaa1+", vvv1="+vvv1)
+
+        /**
+         * as : casting 실패하면 error
+         * as? : casting 실패하면 null
+         * */
+        val aaa2: Any = 0
+        var vvv2: String = (aaa2 as? String) ?: "-1"
+        Logger.d("aaa2="+aaa2+", vvv2="+vvv2)
+
+        val aaa3: String? = null
+        Logger.d("yyy="+(aaa3=="aaa"))
+
+
+//        Environment.getExternalStoragePublicDirectory()
+
+        var bbb = Environment.DIRECTORY_DOWNLOADS + "/data/mdm2"
+        Logger.d("bbb="+bbb)
+//        val dir = File(bbb)
+        val dir = Environment.getExternalStoragePublicDirectory(bbb)
+        Logger.d("dir="+dir.exists())
+        if (!dir.exists()) dir.mkdirs()
+        Logger.d("dir2="+dir.exists())
+    }
+
+    fun useTest() = runBlocking {
+        withContext(Dispatchers.IO) {
+            Logger.d("useTest start1.......")
+
+            /*
+             * Socket을 생성하는 부분은 Exception 발생할 수 있다.
+             * getInputStream 부분 역시 Exception 발생할 수 있다.
+             * finally에 포함한 close 역시 Exception이 발생할 수 있다.
+             */
+            val socket1 = Socket("thdev.tech", 80)
+            val inputStream1 = socket1.getInputStream()
+            val reader1 = InputStreamReader(inputStream1)
+            Logger.d("reader1="+reader1.readText()+", toString1="+reader1.toString())
+            reader1.close()
+            inputStream1.close()
+            socket1.close()
+
+
+            Logger.d("useTest start2.......")
+            /*
+            * use 사용으로 모든 예외처리를 한번에 단. try은 한번 사용하는것이 안전.
+            * */
+            try {
+                Socket("thdev.tech", 80).use {
+                    it.getInputStream().use {
+                        InputStreamReader(it).use {
+                            Logger.d("it2="+it.readText()+", toString2="+it.toString())
+                        }
+                    }
+                }
+            } catch (e: java.lang.Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    fun liveDataTest() {
+
     }
 }
 
